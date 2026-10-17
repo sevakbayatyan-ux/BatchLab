@@ -1,0 +1,2744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BatchLab, Nesting &amp; Production Layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ECEEE9; --panel:#F8F9F6; --ink:#1C2024; --muted:#5D6863; --line:#D3D8D2; --field:#FFFFFF;
+  --mat:#2E5446; --grid:#3A6656; --grid-major:#4F7E6B; --mat-ink:#D5E6DC;
+  --sheet:#FFFFFF; --cut:#E4007C; --accent:#2E5446; --accent-ink:#FFFFFF; --warn:#B4441B; --sel:#1E7FD8;
+  --sans:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#151918; --panel:#1C2120; --ink:#E4E8E3; --muted:#98A39D; --line:#2F3634; --field:#121615;
+    --mat:#1F3A30; --grid:#2A4A3E; --grid-major:#3A5F51; --mat-ink:#BFD6C9;
+    --sheet:#F4F4F0; --accent:#6FAE92; --accent-ink:#0F1A15; --warn:#F08A5D; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151918; --panel:#1C2120; --ink:#E4E8E3; --muted:#98A39D; --line:#2F3634; --field:#121615;
+  --mat:#1F3A30; --grid:#2A4A3E; --grid-major:#3A5F51; --mat-ink:#BFD6C9;
+  --sheet:#F4F4F0; --accent:#6FAE92; --accent-ink:#0F1A15; --warn:#F08A5D; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%; margin:0; background:var(--paper); color:var(--ink); font:14px/1.45 var(--sans); display:flex; flex-direction:column}
+button,input,select{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--cut); outline-offset:2px}
+[hidden]{display:none !important}
+
+.top{display:flex; align-items:center; gap:20px; padding:10px 18px; border-bottom:1px solid var(--line); background:var(--panel); flex-wrap:wrap}
+.brand{display:flex; align-items:center; gap:10px; margin-right:auto}
+.brand h1{font-size:17px; font-weight:650; font-stretch:85%; margin:0}
+.ver{font-size:11.5px; color:var(--muted); border:1px solid var(--line); border-radius:10px; padding:1px 8px; font-variant-numeric:tabular-nums}
+.stats{display:flex; gap:22px; flex-wrap:wrap}
+.stat{display:flex; flex-direction:column; line-height:1.15}
+.stat b{font-size:18px; font-weight:650; font-stretch:80%; font-variant-numeric:tabular-nums}
+.stat span{font-size:12px; color:var(--muted)}
+.actions{display:flex; gap:8px; flex-wrap:wrap}
+.btn{border:1px solid var(--line); background:var(--field); padding:8px 13px; border-radius:6px; cursor:pointer; font-weight:550; white-space:nowrap; display:inline-flex; align-items:center; gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5; cursor:progress}
+.btn.small{padding:5px 9px; font-size:13px}
+/* compact panel */
+details.sec{padding:0; border-bottom:1px solid var(--line)}
+details.sec > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; padding:12px 16px 12px 13px; user-select:none; background:color-mix(in srgb, var(--accent) 15%, var(--panel)); border-left:3px solid var(--accent)}
+details.sec > summary::-webkit-details-marker{display:none}
+details.sec > summary::before{content:""; width:7px; height:7px; border-right:1.6px solid var(--muted); border-bottom:1.6px solid var(--muted); transform:rotate(-45deg); transition:transform .15s; flex:0 0 auto; margin-right:2px}
+details.sec[open] > summary::before{transform:rotate(45deg)}
+details.sec > summary h2{margin:0; font-size:14px; font-weight:700; letter-spacing:.01em}
+details.sec > summary .sum{color:var(--ink) !important; opacity:.7}
+details.sec[open] > summary{background:color-mix(in srgb, var(--accent) 20%, var(--panel)); margin-bottom:12px}
+details.sec > summary .sum{margin-left:auto; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%}
+details.sec[open] > summary .sum{display:none}
+details.sec > summary:hover{background:color-mix(in srgb, var(--accent) 26%, var(--panel))}
+details.sec > summary::before{border-color:var(--accent) !important}
+.side > section.sec > h2{background:color-mix(in srgb, var(--accent) 20%, var(--panel)); border-left:3px solid var(--accent); margin:-14px -18px 12px; padding:10px 18px 10px 15px; font-size:14px; font-weight:700}
+details.sec > :not(summary){margin-left:16px; margin-right:16px}
+details.sec > :last-child{margin-bottom:14px}
+.row.tight{gap:8px; margin-bottom:8px; align-items:flex-end; flex-wrap:nowrap}
+.f{display:flex; flex-direction:column; gap:2px; font-size:11px; color:var(--muted); min-width:0}
+.f > span{white-space:nowrap; display:flex; align-items:center; gap:4px}
+.f input,.f select,.sel{background:var(--field); border:1px solid var(--line); border-radius:5px; padding:4px 6px; font-size:13px; color:var(--ink); width:62px; height:29px; font-variant-numeric:tabular-nums}
+.f select,.sel{width:100%; padding:3px 4px}
+.f:not(.grow) select{width:84px}
+.f.grow{flex:1}
+.f.grow input{width:100%}
+.grow{flex:1; min-width:0}
+.inl{display:flex; gap:6px; align-items:flex-end}
+.inl[hidden]{display:none !important}
+.vsep{width:1px; align-self:stretch; background:var(--line); margin:0 2px}
+.seg.sm{margin:0; flex:0 0 auto}
+.seg.sm button{padding:6px 14px; font-size:14px; font-weight:600; height:36px}
+#material{height:36px; font-size:14px}
+.iconbtn.sm{width:26px; height:29px}
+.check.inline{margin:0 0 6px; white-space:nowrap; font-size:13px}
+.btn.wide{width:100%; justify-content:center; margin-top:2px}
+details.sub{border:1px solid var(--line); border-radius:6px; margin-top:10px}
+details.sub > summary{list-style:none; cursor:pointer; padding:7px 10px; font-size:12.5px; font-weight:600; display:flex; gap:8px; align-items:center}
+details.sub > summary::-webkit-details-marker{display:none}
+details.sub > summary::before{content:"+"; color:var(--accent); font-weight:700; width:10px}
+details.sub[open] > summary::before{content:"\2013"}
+details.sub > summary .sum{margin-left:auto; font-weight:400; color:var(--muted); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
+details.sub[open] > summary .sum{display:none}
+details.sub > .row, details.sub > div > .row{padding:0 10px}
+.using{font-style:normal; color:var(--accent); font-weight:600}
+.info{display:inline-grid; place-items:center; width:14px; height:14px; border-radius:50%; border:1px solid currentColor; font:italic 600 9.5px/1 Georgia, serif; color:var(--muted); cursor:help; flex:0 0 auto}
+.info:hover,.info:focus-visible{color:var(--accent)}
+.tip{position:fixed; z-index:20; max-width:260px; background:var(--ink); color:var(--paper); font-size:12px; line-height:1.4; padding:7px 9px; border-radius:6px; pointer-events:none; box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.side .btn[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+
+.app{flex:1; min-height:0; display:grid; grid-template-columns:400px 1fr}
+.side{overflow:auto; border-right:1px solid var(--line); background:var(--panel)}
+.sec{padding:14px 18px 16px; border-bottom:1px solid var(--line)}
+.sec h2{font-size:14px; font-weight:650; margin:0 0 10px; display:flex; align-items:center; justify-content:space-between; gap:8px}
+.row{display:flex; gap:10px; align-items:flex-end; margin-bottom:10px; flex-wrap:wrap}
+.row:last-child{margin-bottom:0}
+.fld{display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); flex:1; min-width:70px}
+.fld input,.fld select{background:var(--field); border:1px solid var(--line); border-radius:5px; padding:6px 8px; font-size:14px; color:var(--ink); width:100%; font-variant-numeric:tabular-nums}
+.fld input:hover,.fld select:hover{border-color:var(--muted)}
+.check{display:flex; gap:8px; align-items:center; font-size:13.5px; cursor:pointer; margin:0 0 7px}
+.check input{accent-color:var(--accent); width:16px; height:16px; margin:0; flex:0 0 auto}
+.hint{font-size:12px; color:var(--muted); margin:6px 0 0}
+.seg{display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-bottom:12px}
+.seg button{border:0; background:var(--field); padding:6px 16px; cursor:pointer; font-weight:550}
+.seg button[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+.iconbtn{border:1px solid var(--line); background:var(--field); border-radius:5px; width:32px; height:32px; display:grid; place-items:center; cursor:pointer; flex:0 0 auto}
+.iconbtn:hover{border-color:var(--muted)}
+.cutswatch{display:inline-block; width:18px; height:0; border-top:2px solid var(--cut); vertical-align:middle; margin-right:2px}
+.subhead{font-size:12.5px; font-weight:650; margin:14px 0 8px; color:var(--ink)}
+.using{font-size:12px; color:var(--accent); font-weight:600}
+
+.jobs{list-style:none; margin:0; padding:0}
+.job{display:grid; grid-template-columns:52px 1fr 26px; gap:10px; padding:10px 0; border-top:1px solid var(--line)}
+.job:first-child{border-top:0}
+.thumb{width:52px; height:52px; object-fit:contain; background:repeating-conic-gradient(#e3e6e1 0 25%, #fff 0 50%) 0 0/10px 10px; border:1px solid var(--line); border-radius:4px}
+.thumb.sm{width:40px; height:40px}
+.thumb.noback{display:grid; place-items:center; color:var(--muted); font-size:11px; background:var(--field)}
+.job-name{width:100%; border:1px solid transparent; background:transparent; padding:2px 4px; margin:-2px -4px 4px; border-radius:4px; font-weight:600}
+.job-name:hover,.job-name:focus{border-color:var(--line); background:var(--field)}
+.job-size{display:grid; grid-template-columns:68px 22px 68px 52px; gap:6px; align-items:end}
+.job-size .fld{min-width:0}
+.job-size .fld input{padding:4px 6px; font-size:13.5px}
+.lock{height:29px; width:26px; border:0; background:none; cursor:pointer; color:var(--muted); display:grid; place-items:center; padding:0}
+.lock[aria-pressed="true"]{color:var(--accent)}
+.job-opts{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:7px; font-size:12.5px}
+.job-opts .check{margin:0; font-size:12.5px}
+.job-meta{color:var(--muted); font-size:12px; margin-top:4px}
+.placed{margin-left:auto; color:var(--muted); font-variant-numeric:tabular-nums}
+.placed.bad{color:var(--warn); font-weight:600}
+.lowres{color:var(--warn)}
+.fcut{color:var(--cut); font-weight:600}
+.remove{border:0; background:none; cursor:pointer; color:var(--muted); font-size:20px; line-height:1; height:26px; border-radius:4px}
+.remove:hover{color:var(--warn); background:var(--paper)}
+.back-row{display:grid; grid-template-columns:40px 1fr; gap:8px; margin-top:8px; padding:8px; background:var(--paper); border-radius:6px; font-size:12.5px}
+.back-row .bname{font-weight:600; word-break:break-all}
+.back-row .bname.none{color:var(--warn); font-weight:550}
+.back-actions{display:flex; gap:6px; flex-wrap:wrap; margin-top:5px; align-items:center}
+.back-actions select{font-size:12.5px; padding:4px 6px; border:1px solid var(--line); border-radius:5px; background:var(--field); max-width:190px}
+.dropzone{border:1.5px dashed var(--line); border-radius:8px; padding:14px; text-align:center; color:var(--muted); font-size:13px; cursor:pointer; margin-bottom:10px}
+.dropzone:hover{border-color:var(--accent); color:var(--ink)}
+
+.mat{overflow:auto; position:relative;
+  background-color:var(--mat);
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:120px 120px,120px 120px,24px 24px,24px 24px;
+  background-attachment:local;
+}
+.matbar{position:sticky; top:0; z-index:3; display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:9px 26px; background:rgba(14,30,24,.86); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); color:var(--mat-ink); font-size:13px; min-height:48px}
+.matbar .seg{margin:0; border-color:rgba(255,255,255,.25)}
+.matbar .seg button{padding:4px 14px; font-size:13px; color:var(--ink)}
+.matbar .seg button[aria-pressed="true"]{color:var(--accent-ink)}
+.matbar .btn{background:transparent; color:#fff; border-color:rgba(255,255,255,.35)}
+.matbar .btn[aria-pressed="true"]{background:#fff; color:#1C2024; border-color:#fff}
+.edit-hint{flex-basis:100%; font-size:12.5px; line-height:1.4}
+.selbox{display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.08); padding:3px 4px 3px 10px; border-radius:6px}
+.selbox input{width:72px; padding:3px 6px; border-radius:4px; border:1px solid rgba(255,255,255,.35); background:#fff; color:#1C2024; font-variant-numeric:tabular-nums}
+.selbox input:disabled{opacity:.55}
+.fig.editing.tool-add [data-media]{cursor:copy}
+.fig.editing.tool-move [data-media]{cursor:default}
+.fig.editing.tool-remove [data-media]{cursor:default}
+.fig.editing.tool-remove [data-mk]{cursor:pointer}
+.matbody{padding:18px 26px 40px}
+.mat.drag::after{content:"Drop files to add jobs"; position:absolute; inset:12px; border:2px dashed var(--mat-ink); border-radius:12px; display:grid; place-items:center; color:var(--mat-ink); font-size:20px; font-weight:600; background:rgba(20,40,32,.55); pointer-events:none; z-index:5}
+.warns{margin:0 0 14px; display:flex; flex-direction:column; gap:6px}
+.warn{background:#FFF3EC; color:#7A2A0C; border-left:3px solid #D9541E; padding:7px 10px; border-radius:4px; font-size:13px; max-width:780px}
+.fig{margin:0 0 30px}
+.fig figcaption{color:var(--mat-ink); font-size:13px; display:flex; gap:16px; margin:0 0 8px 22px; flex-wrap:wrap}
+.fig figcaption b{color:#fff; font-weight:650}
+.fig svg{display:block; overflow:visible; touch-action:none}
+.fig.editing [data-mk]{cursor:grab}
+.empty{max-width:460px; margin:10vh auto 0; text-align:center; color:var(--mat-ink)}
+.empty h2{color:#fff; font-size:26px; font-weight:650; font-stretch:85%; margin:0 0 8px; line-height:1.15}
+.empty p{margin:0 0 20px}
+.empty .actions{justify-content:center}
+.empty .btn{background:#fff; color:#1C2024; border-color:#fff}
+.empty .btn.ghost{background:transparent; color:#fff; border-color:var(--mat-ink)}
+
+.toast{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:9px 14px; border-radius:6px; font-size:13.5px; max-width:90vw; opacity:0; transition:opacity .2s; pointer-events:none; z-index:50}
+.hist-ov{position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; display:grid; place-items:center}
+.hist{width:min(1040px,94vw); height:min(88vh,920px); background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:10px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.hist-head{display:flex; gap:10px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+.hist-head b{font-size:16px}
+.hist-q{flex:1; min-width:180px; background:var(--field); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:7px 10px; font-size:14px}
+.hist-use{font-size:12px; color:var(--muted)}
+.hist-list{overflow:auto; padding:4px 16px 16px; flex:1}
+.hrow{display:grid; grid-template-columns:200px 1fr auto; gap:16px; padding:14px 0; border-bottom:1px solid var(--line); align-items:center}
+.hrow img{width:200px; display:block; background:#fff; border:1px solid var(--line); border-radius:4px; cursor:zoom-in}
+.hmeta{font-size:13px; color:var(--muted); line-height:1.5; min-width:0}
+.hmeta b{color:var(--ink); font-size:14px; display:block; word-break:break-all}
+.hbtns{display:flex; flex-direction:column; gap:6px}
+.hgal figure{margin:0 0 18px}
+.hgal img{width:100%; display:block; background:#fff; border:1px solid var(--line)}
+.hgal figcaption{font-size:13px; color:var(--muted); margin-top:4px}
+.hist-empty{color:var(--muted); padding:40px 0; text-align:center}
+.toast.show{opacity:1}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+
+@media (max-width: 880px){
+  body{height:auto; display:block}
+  .app{display:block}
+  .side{border-right:0; overflow:visible}
+  .mat{min-height:75vh}
+  .stats{gap:16px; width:100%}
+}
+@media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M13 1v24M1 13h24" stroke="currentColor" stroke-width="1.6"/></svg>
+    <h1>Nesting &amp; production layout</h1>
+    <span class="ver" id="appVer" title="Version of the tool you're running"></span>
+  </div>
+  <div class="stats" id="stats" aria-live="polite"></div>
+  <div class="actions">
+    <button class="btn" id="btnHist" title="Past batches: cut files and sheet screenshots">History</button>
+    <button class="btn" id="btnCsv">Layout report (CSV)</button>
+    <button class="btn" id="btnCut">Export cut-only PDF</button>
+    <button class="btn primary" id="btnPdf">Export print files</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="side">
+    <details class="sec" data-k="media" open>
+      <summary><h2>Media &amp; spacing</h2><span class="sum" id="sumMedia"></span></summary>
+      <div class="row tight">
+        <div class="seg sm" role="group" aria-label="Media type">
+          <button id="modeSheet" aria-pressed="true">Sheet</button>
+          <button id="modeRoll" aria-pressed="false">Roll</button>
+          <button id="modeBanner" aria-pressed="false">Banner</button>
+        </div>
+        <label class="f grow" id="bannerMatWrap" hidden><span>Material</span>
+          <select id="bannerMat">
+            <option value="13oz">13oz vinyl</option>
+            <option value="15oz">15oz vinyl</option>
+            <option value="18oz">18oz blockout</option>
+            <option value="mesh">Mesh</option>
+            <option value="fabric">Fabric</option>
+          </select>
+        </label>
+        <label class="f grow" id="materialWrap"><span>Material</span>
+          <select id="material">
+            <option value="">Choose material</option>
+            <option value="foam">Foam board</option>
+            <option value="coroplast">Coroplast</option>
+            <option value="pvc">PVC</option>
+            <option value="dibond">Dibond</option>
+            <option value="pulpboard">Pulpboard</option>
+            <option value="gatorboard">Gatorboard</option>
+            <option value="acrylic">Acrylic</option>
+            <option value="eflute">E-flute</option>
+            <option value="other">Other…</option>
+          </select>
+        </label>
+      </div>
+      <div class="row tight" id="materialOtherRow" hidden>
+        <label class="f grow"><span>Material name</span><input type="text" id="materialOther" placeholder="e.g. Sintra 6 mm"></label>
+      </div>
+      <div class="row tight">
+        <span id="sheetPresetWrap" class="grow">
+          <select id="sheetPreset" class="sel" aria-label="Sheet size">
+            <option value="96x48">48 × 96 in</option>
+            <option value="96.25x48.25">48.25 × 96.25 in</option>
+            <option value="120x48">48 × 120 in</option>
+            <option value="120x60">60 × 120 in</option>
+            <option value="96x60">60 × 96 in</option>
+            <option value="48x36">36 × 48 in</option>
+            <option value="36x24">24 × 36 in</option>
+            <option value="custom">Custom</option>
+          </select>
+        </span>
+        <span id="bannerPresetWrap" class="grow" hidden>
+          <select id="bannerPreset" class="sel" aria-label="Banner size">
+            <option value="impose">Impose only (file size)</option>
+            <option value="38">38 in roll</option><option value="48">48 in roll</option><option value="54">54 in roll</option>
+            <option value="63">63 in roll</option><option value="126">126 in roll</option><option value="custom">Custom</option>
+          </select>
+        </span>
+        <span id="rollPresetWrap" class="grow" hidden>
+          <select id="rollPreset" class="sel" aria-label="Roll width">
+            <option value="24">24 in roll</option><option value="30">30 in roll</option><option value="36">36 in roll</option>
+            <option value="38">38 in roll</option><option value="50">50 in roll</option><option value="54">54 in roll</option>
+            <option value="60">60 in roll</option><option value="63">63 in roll</option><option value="64">64 in roll</option>
+            <option value="72">72 in roll</option><option value="98">98 in roll</option><option value="126">126 in roll</option>
+            <option value="custom">Custom</option>
+          </select>
+        </span>
+        <label class="f" id="thickWrap">
+          <select id="thickness" style="width:104px" aria-label="Board thickness">
+            <option value="">Thickness</option>
+          </select>
+        </label>
+      </div>
+      <div class="row tight">
+        <span id="sheetFields" class="inl">
+          <label class="f"><span>Width</span><input type="number" id="sheetW" min="1" step="0.125"></label>
+          <button class="iconbtn sm" id="swap" title="Swap width and height" aria-label="Swap width and height">
+            <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5h10l-3-3M13 11H3l3 3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+          <label class="f"><span>Height</span><input type="number" id="sheetH" min="1" step="0.125"></label>
+        </span>
+        <span id="bannerFields" class="inl" hidden>
+          <label class="f"><span>Roll width</span><input type="number" id="bannerRollW" min="1" step="0.125" title=""></label>
+        </span>
+        <span id="rollFields" class="inl" hidden>
+          <label class="f"><span>Width</span><input type="number" id="rollW" min="1" step="0.125"></label>
+          <label class="f"><span>Max len <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Maximum panel length in inches. 0 means no limit; the roll is cut wherever the job ends.">i</span></span><input type="number" id="rollMax" min="0" step="1"></label>
+        </span>
+        <span class="vsep" aria-hidden="true"></span>
+        <label class="f"><span>Margin</span><input type="number" id="margin" min="0" step="0.125"></label>
+        <label class="f"><span>Gap</span><input type="number" id="gap" min="0" step="0.0625"></label>
+      </div>
+      <label class="check" style="margin-bottom:6px">
+        <input type="checkbox" id="consistent"> Same layout on every sheet
+        <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="When many pieces share one size, every full sheet uses the same arrangement, and the last sheet uses the same positions with some left empty. Different designs of the same size share the pattern.">i</span>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="rotate"> Allow 90° rotation
+        <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="For gang runs set margin and gap to 0 and place marks in empty spaces. Layouts use the fewest sheets, then the shortest length of board, so the leftover comes off as one offcut.">i</span>
+      </label>
+    </details>
+
+    <details class="sec" data-k="banner" id="bannerSec" open hidden>
+      <summary><h2>Banner finishing</h2><span class="sum" id="sumBanner"></span></summary>
+      <div id="bannerFinishFields" class="">
+      <div class="row tight">
+        <label class="check inline" style="margin:0 4px 8px 0"><input type="checkbox" id="bannerHemOn"> Hem 1" <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Adds a 1 in fold-over on every side without a pole pocket.">i</span></label>
+        <label class="f grow"><span>Pole pockets</span>
+          <select id="bannerPockets">
+            <option value="none">None</option><option value="top">Top</option><option value="bottom">Bottom</option><option value="tb">Top &amp; bottom</option>
+            <option value="left">Left</option><option value="right">Right</option><option value="lr">Left &amp; right</option>
+          </select>
+        </label>
+        <label class="f"><span>Pocket <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Material added outside the finished edge for each pole pocket: the fold-over plus the weld or sewing strip. On double-sided banners the pocket flaps carry the matching strip of the back artwork, turned so it lines up after folding.">i</span></span><input type="number" id="bannerPocket" min="0" step="0.25" title=""></label>
+      </div>
+      <div class="row tight">
+        <label class="f grow"><span>Grommets</span>
+          <select id="bannerGrom">
+            <option value="none">None</option><option value="corners">Corners only</option>
+            <option value="24">Every 2 ft</option><option value="12">Every 1 ft</option><option value="custom">Custom spacing</option>
+          </select>
+        </label>
+        <label class="f" id="gromEveryWrap"><span>Every (in)</span><input type="number" id="bannerGromEvery" min="2" step="1" title=""></label>
+        <label class="f"><span>From edge <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Distance from the finished edge to the centre of each grommet. Pole-pocket sides get no grommets.">i</span></span><input type="number" id="bannerGromInset" min="0" step="0.125" title=""></label>
+      </div>
+      <div class="row tight" id="gromSidesRow">
+        <label class="f grow"><span>Grommet sides <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Corners are added wherever a chosen side meets another edge. Sides with a pole pocket never get grommets.">i</span></span>
+          <select id="bannerGromSides">
+            <option value="all">All 4 sides</option><option value="tb">Top &amp; bottom</option><option value="lr">Left &amp; right</option><option value="custom">Custom</option>
+          </select>
+        </label>
+        <span class="inl" id="gromCustom" style="gap:10px; margin-bottom:6px">
+          <label class="check inline" style="margin:0"><input type="checkbox" id="gromT"> Top</label>
+          <label class="check inline" style="margin:0"><input type="checkbox" id="gromB"> Bottom</label>
+          <label class="check inline" style="margin:0"><input type="checkbox" id="gromL"> Left</label>
+          <label class="check inline" style="margin:0"><input type="checkbox" id="gromR"> Right</label>
+        </span>
+      </div>
+      <div class="row tight">
+        <label class="check inline"><input type="checkbox" id="bannerFold"> Fold marks <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Short lines in the corners, outside the finished banner, that line up with each fold so the hem or pocket folds straight.">i</span></label>
+        </div>
+      </div>
+      <div class="row tight">
+        <label class="check inline"><input type="checkbox" id="bannerCrop"> Cut marks at corners</label>
+      </div>
+    </details>
+
+    <details class="sec" data-k="cutter" open>
+      <summary><h2>Cutter &amp; marks</h2><span class="sum" id="sumCutter"></span></summary>
+      <div class="row tight">
+        <label class="f grow"><span>Cutter</span>
+          <select id="cutter">
+            <option value="colex">Colex</option><option value="summa">Summa</option><option value="ruk">RUK</option>
+            <option value="saga">SAGA XY (roll)</option><option value="other">Other</option><option value="none">No marks</option>
+          </select>
+        </label>
+        <label class="f grow"><span>Cut line <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Cut lines export as a 100% magenta spot color with this name, set to overprint. Most RIPs and cutter software read CutContour.">i</span></span><input type="text" id="spotName" spellcheck="false"></label>
+        <label class="f"><span>Bleed <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Artwork files include this much bleed on every side. The cut line sits this far inside the artwork edge, on the trim. A 24 × 36 sign with 0.125 in bleed is a 24.25 × 36.25 in file.">i</span></span><input type="number" id="bleed" min="0" step="0.0625" title=""></label>
+      </div>
+      <div id="markFields">
+        <div class="row tight">
+          <label class="f grow"><span>Placement <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Around the artwork reserves a border for marks. In empty spaces uses no border and puts marks in open spots, for gang runs with 0 gap. Auto picks whichever uses less board and can still be cut.">i</span> <em class="using" id="modeUsing"></em></span>
+            <select id="markMode">
+              <option value="auto">Auto</option>
+              <option value="frame">Around the artwork</option>
+              <option value="free">In empty spaces</option>
+            </select>
+          </label>
+          <label class="f"><span>Qty</span><input type="number" id="markQty" min="3" step="1"></label>
+        </div>
+        <div id="freeFields">
+          <div class="row tight">
+            <label class="check inline"><input type="checkbox" id="balance"> Arrange space <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Centers lone pieces, slides columns so marks fit on both sides, and leaves a narrow strip at each end of the run. Leftover over 12 in stays in one usable offcut.">i</span></label>
+          </div>
+        </div>
+        <button class="btn small wide" id="lockSide" aria-pressed="false"></button>
+      </div>
+      <div id="xyFields" hidden>
+        <div class="row tight">
+          <label class="f"><span>Line <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Thickness of the two black lines that run the full length of the panel, one on each side of the artwork.">i</span></span><input type="number" id="xyMarkW" min="0.01" step="0.01"></label>
+          <label class="f"><span>Tab W</span><input type="number" id="xyTabW" min="0.05" step="0.05"></label>
+          <label class="f"><span>Tab L <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Each X cut gets a black tab on the inside of both lines. The top edge of the tab sits on the cut.">i</span></span><input type="number" id="xyTabL" min="0.05" step="0.05"></label>
+          <label class="f"><span>Line→art</span><input type="number" id="xyMarkOff" min="0" step="0.0625"></label>
+        </div>
+        <div class="row tight">
+          <label class="f"><span>Edge→line <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Distance from the roll edge to the outside of each line. Together with the line and Line→art it sets the side margin.">i</span></span><input type="number" id="xyEdge" min="0" step="0.125"></label>
+          <label class="f"><span>Lead / trail</span><input type="number" id="xyLead" min="0" step="0.125"></label>
+          <span class="hint" style="margin:0 0 6px">SAGA lines + tabs <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Pieces are laid out in a straight grid so every cut runs edge to edge. Check the line and tab sizes on a test print before production.">i</span></span>
+        </div>
+      </div>
+      <details class="sub" id="cutterDefaults">
+        <summary>Cutter defaults <span class="sum" id="defSum"></span></summary>
+        <div class="row tight" style="justify-content:flex-end">
+          <button class="btn small" id="resetCutter" title="Put this cutter's settings back to the shop defaults">Reset to cutter defaults</button>
+        </div>
+        <div class="row tight">
+          <label class="check inline"><input type="checkbox" id="renameFileCut"> Rename cut lines found in files to the Cut line name <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="PDFs that already have a cut path in a spot colour (Cut, CutContour, Thru-cut, Die, Kiss-cut and similar) use that path instead of a rectangle. With this on, the spot is renamed on export so every cut on the sheet uses one name.">i</span></label>
+        </div>
+        <div id="dotDefaults">
+          <div class="row tight">
+            <label class="f"><span>Mark</span>
+            <select id="markShape"><option value="circle">Dot</option><option value="square">Square</option></select>
+          </label>
+            <label class="f"><span>Size</span><input type="number" id="markSize" min="0.05" step="0.0625"></label>
+            <label class="f"><span>From art <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Clear distance between a mark and the nearest artwork, in inches.">i</span></span><input type="number" id="markDist" min="0" step="0.0625"></label>
+          </div>
+          <div class="row tight">
+            <label class="f grow"><span>Direction dots <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="A second dot beside one corner mark tells the cutter which way the sheet is fed.">i</span></span>
+            <select id="dirCorner">
+              <option value="bl">Bottom-left</option><option value="br">Bottom-right</option>
+              <option value="tl">Top-left</option><option value="tr">Top-right</option>
+            </select>
+          </label>
+            <label class="f"><span>Apart</span><input type="number" id="dirSpacing" min="0.25" step="0.125"></label>
+          </div>
+          <div class="row tight" id="freeDefaults">
+            <label class="f"><span>From edge</span><input type="number" id="markEdge" min="0" step="0.125"></label>
+            <label class="f"><span>Min spacing</span><input type="number" id="markSpacing" min="0.5" step="0.5"></label>
+          </div>
+        </div>
+      </details>
+      <span id="spotEcho" hidden></span>
+    </details>
+
+    <details class="sec" data-k="qr" id="qrSec">
+      <summary><h2>QR file ID</h2><span class="sum" id="sumQR"></span></summary>
+      <label class="check"><input type="checkbox" id="qr"> QR code with file name on each page <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Each page exports as its own PDF with this name and the QR encodes the same name. Backs export as _BACK. In empty-space layouts the QR goes in the open spot nearest the chosen corner.">i</span></label>
+      <div id="qrFields">
+        <div class="row tight">
+          <label class="f"><span>Size</span><input type="number" id="qrSize" min="0.5" step="0.125"></label>
+          <label class="f grow"><span>Position</span>
+            <select id="qrCorner"><option value="bl">Bottom-left</option><option value="br">Bottom-right</option><option value="tl">Top-left</option><option value="tr">Top-right</option></select>
+          </label>
+        </div>
+        <p class="hint">File: <b id="namePreview"></b></p>
+      </div>
+    </details>
+
+    <details class="sec" data-k="ds">
+      <summary><h2>Double-sided</h2><span class="sum" id="sumDS"></span></summary>
+      <div class="row tight">
+        <label class="f grow"><span>Turn sheet over <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Back pieces are mirrored across the sheet center so they land behind their fronts, and rotated pieces are turned the right way. Turn on Double-sided on a job, then add its back file.">i</span></span>
+          <select id="flip">
+            <option value="v">Vertically (top to bottom)</option>
+            <option value="h">Horizontally (left to right)</option>
+          </select>
+        </label>
+        <label class="f"><span>Nudge X <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Shifts all back artwork to correct printer registration. Positive X moves right, positive Y moves down.">i</span></span><input type="number" id="backNudgeX" step="0.0313"></label>
+        <label class="f"><span>Nudge Y</span><input type="number" id="backNudgeY" step="0.0313"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="dsSeparate"> Double-sided on their own sheets <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Leave off to gang single-sided jobs into open space on double-sided sheets of the same material. Their backs print blank.">i</span></label>
+      <label class="check"><input type="checkbox" id="backMarks"> Marks and QR on the back too</label>
+    </details>
+
+    <details class="sec" data-k="output">
+      <summary><h2>Output</h2><span class="sum" id="sumOut"></span></summary>
+      <div class="row tight">
+        <label class="f grow"><span>Order # / custom text <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="Added to every file name after the board and thickness, and to the job label and QR. Leave empty to skip.">i</span></span><input type="text" id="orderNo" placeholder="e.g. PO-4127"></label>
+      </div>
+      <div class="row tight">
+        <label class="check inline"><input type="checkbox" id="cropMarks"> Crop marks</label>
+        <label class="check inline"><input type="checkbox" id="label"> Job label in margin</label>
+      </div>
+    </details>
+
+    <section class="sec">
+      <h2>Jobs <span>
+        <button class="btn small" id="btnAdd">Add files</button>
+        <button class="btn small" id="btnClear">Clear</button>
+      </span></h2>
+      <input type="file" id="fileIn" multiple accept=".pdf,.svg,.png,.jpg,.jpeg,.webp,.gif,application/pdf,image/*" class="sr">
+      <input type="file" id="backIn" accept=".pdf,.svg,.png,.jpg,.jpeg,.webp,.gif,application/pdf,image/*" class="sr">
+      <div class="dropzone" id="dropzone">Drop PDF, SVG, PNG or JPG files, or click to browse</div>
+      <div class="row tight">
+        <label class="f"><span>Raster ppi <span class="info" tabindex="0" role="button" aria-label="More info" data-tip="PNG and JPG files are sized from their pixels at this resolution. You can change each size below.">i</span></span><input type="number" id="imgPpi" min="10" step="1"></label>
+      </div>
+      <ul class="jobs" id="jobs"></ul>
+    </section>
+  </aside>
+
+  <main class="mat" id="mat">
+    <div class="matbar" id="matbar">
+      <div class="seg" role="group" aria-label="Side shown" id="sideSeg" hidden>
+        <button data-side="front" aria-pressed="true">Front</button>
+        <button data-side="back" aria-pressed="false">Back</button>
+      </div>
+      <button class="btn small" id="lockBtn" aria-pressed="false"></button>
+      <div class="seg" role="group" aria-label="Mark tool" id="toolSeg" hidden>
+        <button data-tool="move" aria-pressed="true">Move</button>
+        <button data-tool="add" aria-pressed="false">Add dots</button>
+        <button data-tool="remove" aria-pressed="false">Remove dots</button>
+      </div>
+      <span class="selbox" id="selBox" hidden>
+        <span id="selLabel">Selected dot</span>
+        <label>X <input type="number" id="selX" step="0.0625"></label>
+        <label>Y <input type="number" id="selY" step="0.0625"></label>
+        <span>in</span>
+        <button class="btn small" id="selDir">Add direction dot</button>
+        <button class="btn small" id="selDel">Delete</button>
+      </span>
+      <button class="btn small" id="resetMarks" hidden>Reset marks to automatic</button>
+      <span id="sideNote"></span>
+      <span class="edit-hint" id="editHint" hidden></span>
+    </div>
+    <div class="matbody">
+      <div class="warns" id="warns"></div>
+      <div id="sheets"></div>
+    </div>
+  </main>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="offcutHatch" patternUnits="userSpaceOnUse" width="2" height="2" patternTransform="rotate(45)"><rect width="2" height="2" fill="rgba(122,135,128,.06)"/><line x1="0" y1="0" x2="0" y2="2" stroke="rgba(122,135,128,.22)" stroke-width="0.25"/></pattern></defs><defs id="defs"></defs></svg>
+<div class="toast" id="toast" role="status"></div>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/pdf-lib.min.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const EPS = 1e-6;
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+
+/* ================= state ================= */
+const DEFAULTS = { mode:"sheet", sheetW:96, sheetH:48, rollW:54, rollMax:0, margin:0.1, gap:0, rotate:true,
+  cropMarks:false, label:true, jobName:"", price:0, imgPpi:150,
+  cutter:"colex", spotName:"CutContour", markShape:"circle", markSize:0.25, markQty:6, markDist:0.1, dirCorner:"bl", dirSpacing:2,
+  markMode:"auto", markEdge:0.2, markSpacing:6, balance:true,
+  qr:false, qrSize:1.5, qrCorner:"bl",
+  xyMarkW:0.12, xyTabW:0.3, xyTabL:0.5, xyMarkOff:0.75, xyEdge:0.5, xyLead:1,
+  flip:"v", dsSeparate:false, consistent:true, bleed:0.125, renameFileCut:true,
+  bannerRollW:63, bannerMat:"13oz", bannerHemOn:false, bannerImpose:true, bannerPockets:"none", bannerPocket:4, bannerGrom:"none", bannerGromEvery:24, bannerGromSides:"all", gromT:true, gromB:true, gromL:true, gromR:true, bannerGromInset:0.5, bannerFold:true, bannerCrop:true, material:"foam", materialOther:"", thickness:"3/16\"", backMarks:false, backNudgeX:0, backNudgeY:0 };
+const CUTTERS = {
+  colex: { spotName:"CutContour", markShape:"circle", markSize:0.25, markQty:6, markDist:0.1, dirCorner:"bl", dirSpacing:2, markEdge:0.2, markSpacing:6, markMode:"auto", balance:true, bleed:0.125, renameFileCut:true },
+  summa: { markShape:"square", markSize:0.125, markQty:6, markDist:0.5 },
+  ruk:   { markShape:"circle", markSize:0.25, markQty:6, markDist:0.5 }
+};
+// each cutter remembers its own mark settings
+const PROFILE_KEYS = ["spotName", "markShape", "markSize", "markQty", "markDist", "dirCorner", "dirSpacing", "markEdge", "markSpacing"];
+function saveProfile(){ if (!state.profiles) state.profiles = {}; const p = {}; for (const k of PROFILE_KEYS) p[k] = state[k]; state.profiles[state.cutter] = p; }
+const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const newCode = () => Array.from(crypto.getRandomValues(new Uint8Array(4)), v => CODE_CHARS[v % CODE_CHARS.length]).join("");
+const state = Object.assign({}, DEFAULTS);
+try { const s = JSON.parse(localStorage.getItem("nest-tool-v1") || "null"); if (s) { Object.assign(state, s); if ((s.v || 0) < 3) { state.flip = "v"; state.dsSeparate = false; } if ((s.v || 0) < 5) state.bleed = 0.125; if ((s.v || 0) < 4) Object.assign(state, { xyMarkW:0.12, xyTabW:0.3, xyTabL:0.5, xyMarkOff:0.75, xyEdge:0.5, xyLead:1 }); } } catch (e) {}
+state.v = 8;
+try { if ((JSON.parse(localStorage.getItem("nest-tool-v1") || "{}").v || 0) < 8) state.consistent = true; } catch (e) {}
+try { if ((JSON.parse(localStorage.getItem("nest-tool-v1") || "{}").v || 0) < 7) { state.bannerImpose = true; state.bannerHemOn = false; } } catch (e) {}
+if (state.bannerPocket === 3) state.bannerPocket = 4;
+state.jobName = "";
+if (state.bannerGrom === "every") state.bannerGrom = String(state.bannerGromEvery || 24);
+if (!(state.dirSpacing >= 0.25)) state.dirSpacing = 1;
+state.code = newCode();
+function saveSettings(){ try { localStorage.setItem("nest-tool-v1", JSON.stringify(state)); } catch (e) {} }
+
+let jobs = [], layout = null, jid = 0, mkid = 0;
+let side = "front", unlocked = false, selMark = null, drag = null, grabbed = false;
+const overrides = new Map();   // sheet signature -> edited marks
+const PALETTE = ["#4C7A9B","#C2803A","#6F8F4E","#8E5A86","#B5524A","#3F8C88","#9A8A3C","#5866A6"];
+const ART_KEYS = ["type","thumb","pdfBytes","pageIndex","pageRot","svgSrc","imgBytes","imgKind","px","sample","natW","natH","srcName","fileCut"];
+
+/* ================= helpers ================= */
+const fmt = (n, d=3) => (+n).toFixed(d).replace(/\.?0+$/, "");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const num = (v, f=0) => { const n = parseFloat(v); return isFinite(n) ? n : f; };
+let toastT;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 4200); }
+let schedT;
+function schedule(){ clearTimeout(schedT); schedT = setTimeout(update, 160); }
+function loadImg(src){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("image could not be decoded")); i.src = src; }); }
+function readDataURL(blob){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(blob); }); }
+function canvasBlob(c, type="image/png"){ return new Promise(res => c.toBlob(res, type)); }
+function thumbFrom(img, max=600){
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+  const s = Math.min(1, max / Math.max(iw, ih));
+  const c = document.createElement("canvas");
+  c.width = Math.max(1, Math.round(iw * s)); c.height = Math.max(1, Math.round(ih * s));
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL("image/png");
+}
+const isBanner = () => state.mode === "banner";
+const bannerFinish = () => isBanner();
+const isXY = () => state.cutter === "saga" && !isBanner();
+const marksOn = () => state.cutter !== "none" && !isXY() && !isBanner();
+const qrOn = () => state.qr && !isBanner();
+const rollWidth = () => isBanner() ? state.bannerRollW : state.rollW;
+const BANNER_MATS = { "13oz":"13oz vinyl", "15oz":"15oz vinyl", "18oz":"18oz blockout", mesh:"Mesh", fabric:"Fabric" };
+/* ---- banner finishing: allowances outside the finished size, fold and grommet marks ---- */
+function bannerAllow(){
+  const hem = state.bannerHemOn ? 1 : 0, pk = Math.max(0, state.bannerPocket || 0), ps = state.bannerPockets;
+  const P = { t: ps === "top" || ps === "tb", b: ps === "bottom" || ps === "tb", l: ps === "left" || ps === "lr", r: ps === "right" || ps === "lr" };
+  return { t: P.t ? pk : hem, b: P.b ? pk : hem, l: P.l ? pk : hem, r: P.r ? pk : hem, P };
+}
+function jobBleed(j){ if (isBanner()) return 0; return Math.max(0, Math.min(state.bleed || 0, j.w / 2 - 0.01, j.h / 2 - 0.01)); }
+function pieceDims(j){
+  if (!bannerFinish()) return [j.w, j.h];
+  const a = bannerAllow(), b = jobBleed(j);
+  return [j.w - 2 * b + a.l + a.r, j.h - 2 * b + a.t + a.b];
+}
+// allowances in sheet directions (a piece turned 90° clockwise moves its top allowance to the right)
+function gromSides(){
+  const s = state.bannerGromSides;
+  if (s === "tb") return { t:true, b:true, l:false, r:false };
+  if (s === "lr") return { t:false, b:false, l:true, r:true };
+  if (s === "custom") return { t:!!state.gromT, b:!!state.gromB, l:!!state.gromL, r:!!state.gromR };
+  return { t:true, b:true, l:true, r:true };
+}
+function sheetAllow(it){
+  const a = Object.assign(bannerAllow(), { G:gromSides() });
+  return it.rot ? { l:a.b, t:a.l, r:a.t, b:a.r, P:{ l:a.P.b, t:a.P.l, r:a.P.t, b:a.P.r }, G:{ l:a.G.b, t:a.G.l, r:a.G.t, b:a.G.r } } : a;
+}
+function foldRect(it){ const s = sheetAllow(it); return { x:it.x + s.l, y:it.y + s.t, w:it.w - s.l - s.r, h:it.h - s.t - s.b }; }
+function artBox(it){ if (!bannerFinish()) return it; const f = foldRect(it), b = jobBleed(it.job); return { x:f.x - b, y:f.y - b, w:f.w + 2 * b, h:f.h + 2 * b }; }
+function cutRect(it){ return isBanner() ? it : trimRect(it); }
+// Double-sided banner with pole pockets: each pocket flap folds over onto the back, so the flap is printed
+// with the strip of the BACK art it covers. Top/bottom flaps carry it turned 180°; left/right flaps carry it
+// taken from the opposite side, unturned (fold + turning the banner round cancel out).
+function bannerFlaps(it){
+  const j = it.job;
+  if (!bannerFinish() || !j.ds || !j.back) return [];
+  const a = bannerAllow(), b = jobBleed(j), Wf = j.w - 2 * b, Hf = j.h - 2 * b, L = [];
+  if (a.P.t && a.t > EPS) L.push({ clip:[0, -a.t, Wf, a.t], box:[-b, -(Hf + b), j.w, j.h], rot:180 });
+  if (a.P.b && a.b > EPS) L.push({ clip:[0, Hf, Wf, a.b], box:[-b, Hf - b, j.w, j.h], rot:180 });
+  if (a.P.l && a.l > EPS) L.push({ clip:[-a.l, 0, a.l, Hf], box:[-Wf - b, -b, j.w, j.h], rot:0 });
+  if (a.P.r && a.r > EPS) L.push({ clip:[Wf, 0, a.r, Hf], box:[Wf - b, -b, j.w, j.h], rot:0 });
+  const OH = Hf + a.t + a.b;
+  const map = (lx, ly) => { const u = lx + a.l, v = ly + a.t; return it.rot ? [it.x + OH - v, it.y + u] : [it.x + u, it.y + v]; };
+  const rect = ([x, y, w, h]) => { const p = map(x, y), q = map(x + w, y + h); return { x:Math.min(p[0], q[0]), y:Math.min(p[1], q[1]), w:Math.abs(q[0] - p[0]), h:Math.abs(q[1] - p[1]) }; };
+  return L.map(f => ({ clip:rect(f.clip), box:rect(f.box), rot:(f.rot + (it.rot ? 90 : 0)) % 360 }));
+}
+let flapUid = 0;
+function bannerMarks(it){
+  if (!bannerFinish()) return { lines:[], gromm:[] };
+  const f = foldRect(it), s = sheetAllow(it), lines = [], gromm = [], gap = state.gap;
+  if (state.bannerFold) {
+    const ext = v => v > EPS ? v : Math.min(0.25, gap);
+    if (s.t > EPS || s.b > EPS) for (const [y, has] of [[f.y, s.t > EPS], [f.y + f.h, s.b > EPS]]) if (has) {
+      const L = ext(s.l), R = ext(s.r);
+      if (L > EPS) lines.push([f.x - L, y, f.x - 0.0625, y]);
+      if (R > EPS) lines.push([f.x + f.w + 0.0625, y, f.x + f.w + R, y]);
+    }
+    for (const [x, has] of [[f.x, s.l > EPS], [f.x + f.w, s.r > EPS]]) if (has) {
+      const T = ext(s.t), B = ext(s.b);
+      if (T > EPS) lines.push([x, f.y - T, x, f.y - 0.0625]);
+      if (B > EPS) lines.push([x, f.y + f.h + 0.0625, x, f.y + f.h + B]);
+    }
+  }
+  if (state.bannerGrom !== "none") {
+    const i = Math.max(0, state.bannerGromInset || 0), P = s.P;
+    // a side gets grommets if it was chosen and has no pole pocket
+    const on = { t:s.G.t && !P.t, b:s.G.b && !P.b, l:s.G.l && !P.l, r:s.G.r && !P.r };
+    const x0 = f.x + i, x1 = f.x + f.w - i, y0 = f.y + i, y1 = f.y + f.h - i;
+    const corner = (a, b, pa, pb) => (a || b) && !pa && !pb;
+    if (corner(on.t, on.l, P.t, P.l)) gromm.push([x0, y0]);
+    if (corner(on.t, on.r, P.t, P.r)) gromm.push([x1, y0]);
+    if (corner(on.b, on.l, P.b, P.l)) gromm.push([x0, y1]);
+    if (corner(on.b, on.r, P.b, P.r)) gromm.push([x1, y1]);
+    if (state.bannerGrom !== "corners") {
+      const sp = Math.max(2, state.bannerGrom === "custom" ? (state.bannerGromEvery || 24) : +state.bannerGrom);
+      const along = (a, b, fixed, horiz) => { const n = Math.ceil((b - a) / sp - EPS); for (let k = 1; k < n; k++) { const v = a + (b - a) * k / n; gromm.push(horiz ? [v, fixed] : [fixed, v]); } };
+      if (on.t) along(x0, x1, y0, true);
+      if (on.b) along(x0, x1, y1, true);
+      if (on.l) along(y0, y1, x0, false);
+      if (on.r) along(y0, y1, x1, false);
+    }
+  }
+  return { lines, gromm };
+}
+const QR_TEXT_BAND = 0.2, QZ = 0.125;
+function nameSlug(){ return (state.jobName || "").trim().replace(/[^A-Za-z0-9-]+/g, "-").replace(/^-+|-+$/g, ""); }
+function fileSafe(s){ return String(s || "").trim().replace(/"/g, "in").replace(/\//g, "-").replace(/[^A-Za-z0-9.\-]+/g, "-").replace(/^-+|-+$/g, ""); }
+function todayStr(){ const d = new Date(); return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+// file names: board, thickness, job name, sheet number, today's date (then _FRONT / _BACK / _CUT)
+function nameParts(){
+  const sheet = state.mode === "sheet";
+  const mat = sheet ? (state.material === "other" ? state.materialOther : (MATERIALS[state.material] || "")) : isBanner() ? (BANNER_MATS[state.bannerMat] || "") : "";
+  return [fileSafe(mat), fileSafe(sheet ? state.thickness : ""), nameSlug(), fileSafe(state.orderNo)].filter(Boolean);
+}
+function fileName(i){ return [...nameParts(), todayStr(), `S${i + 1}`].join("_"); }
+function zipName(){ return [...nameParts(), todayStr()].join("_"); }
+function itemsArea(items){ return items.reduce((s, it) => s + it.w * it.h, 0); }
+
+/* ================= artwork loading ================= */
+async function loadAny(f){
+  const base = f.name.replace(/\.[^.]+$/, "");
+  const ext = (f.name.split(".").pop() || "").toLowerCase();
+  if (ext === "pdf" || f.type === "application/pdf") return loadPdf(f, base);
+  if (ext === "svg" || f.type === "image/svg+xml") return loadSvg(f, base);
+  if ((f.type || "").startsWith("image/") || ["png","jpg","jpeg","webp","gif"].includes(ext)) return loadRaster(f, base, ext);
+  throw new Error("unsupported type. Use PDF, SVG, PNG or JPG");
+}
+/* ---- cut lines already in the artwork (spot colors) ---- */
+const CUT_SPOT_NAMES = ["cut", "cutcontour", "contourcut", "thrucut", "throughcut", "kisscut", "diecut", "die", "dieline", "dielines",
+  "cutline", "cutlines", "cutpath", "contour", "cutter", "perfcut", "cuts", "trim", "trimline"];
+const normCut = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const isCutSpot = n => CUT_SPOT_NAMES.includes(normCut(n)) || normCut(n) === normCut(state.spotName);
+function pdfNameStr(n){ return n.asString().slice(1).replace(/#([0-9a-fA-F]{2})/g, (m, x) => String.fromCharCode(parseInt(x, 16))); }
+function pageResources(page){
+  let r = null;
+  try { r = page.node.Resources(); } catch (e) {}
+  if (!r) { let node = page.node; while (node && !r) { try { r = node.lookup(PDFLib.PDFName.of("Resources")); } catch (e) {} try { node = node.lookup(PDFLib.PDFName.of("Parent")); } catch (e) { node = null; } } }
+  return r;
+}
+// visit every /Separation colour space reachable from the page's resources (forms and patterns included)
+function walkSeparations(ctx, root, cb){
+  const { PDFRef, PDFArray, PDFDict, PDFName, PDFStream } = PDFLib, seen = new Set();
+  const visit = o => {
+    if (!o) return;
+    if (o instanceof PDFRef) { const k = o.toString(); if (seen.has(k)) return; seen.add(k); return visit(ctx.lookup(o)); }
+    if (o instanceof PDFArray) {
+      const a0 = o.get(0);
+      if (o.size() >= 2 && a0 instanceof PDFName && a0.asString() === "/Separation") { const nm = o.get(1); if (nm instanceof PDFName) cb(o, pdfNameStr(nm)); }
+      for (let i = 0; i < o.size(); i++) visit(o.get(i));
+      return;
+    }
+    if (o instanceof PDFDict) { for (const [k, v] of o.entries()) { const ks = k.asString(); if (ks !== "/Parent" && ks !== "/Contents") visit(v); } return; }
+    if (o instanceof PDFStream) visit(o.dict);
+  };
+  visit(root);
+}
+function detectFileCut(src, pageIndex){
+  const found = new Set();
+  try { walkSeparations(src.context, pageResources(src.getPage(pageIndex)), (arr, name) => { if (isCutSpot(name)) found.add(name); }); } catch (e) { console.warn(e); }
+  return [...found];
+}
+// copy of the page with its cut spot renamed to the Cut line name (so the cutter reads one name)
+async function pdfWithRenamedCut(a){
+  const target = (state.spotName || "CutContour").trim() || "CutContour";
+  if (!state.renameFileCut || !(a.fileCut || []).some(n => n !== target)) return a.pdfBytes;
+  const src = await PDFLib.PDFDocument.load(a.pdfBytes, { ignoreEncryption:true, updateMetadata:false });
+  walkSeparations(src.context, pageResources(src.getPage(a.pageIndex)), (arr, name) => { if (isCutSpot(name)) arr.set(1, PDFLib.PDFName.of(target)); });
+  return src.save();
+}
+// keep only the strokes painted in a cut spot colour; drop all artwork
+function filterCutContent(text, cutRes){
+  const out = [], gstack = [];
+  let stack = [], path = [], lw = "1", sCS = null, sVals = [], sCut = false, found = 0, forms = 0, i = 0;
+  const n = text.length, ws = c => c === " " || c === "\n" || c === "\r" || c === "\t" || c === "\f" || c === "\0";
+  const delim = c => "()<>[]{}/%".includes(c);
+  const skipString = () => { let d = 0; do { const ch = text[i]; if (ch === "\\") { i += 2; continue; } if (ch === "(") d++; else if (ch === ")") d--; i++; } while (i < n && d > 0); };
+  while (i < n) {
+    const c = text[i];
+    if (ws(c)) { i++; continue; }
+    if (c === "%") { while (i < n && text[i] !== "\n" && text[i] !== "\r") i++; continue; }
+    if (c === "(") { const s = i; skipString(); stack.push(text.slice(s, i)); continue; }
+    if (c === "<" && text[i + 1] === "<") {
+      const s = i; let d = 0;
+      while (i < n) { if (text[i] === "<" && text[i + 1] === "<") { d++; i += 2; continue; } if (text[i] === ">" && text[i + 1] === ">") { d--; i += 2; if (!d) break; continue; } if (text[i] === "(") { skipString(); continue; } i++; }
+      stack.push(text.slice(s, i)); continue;
+    }
+    if (c === "<") { const s = i, e = text.indexOf(">", i); i = e < 0 ? n : e + 1; stack.push(text.slice(s, i)); continue; }
+    if (c === "[") {
+      const s = i; let d = 0;
+      while (i < n) { const ch = text[i]; if (ch === "(") { skipString(); continue; } if (ch === "[") d++; else if (ch === "]") { d--; if (!d) { i++; break; } } i++; }
+      stack.push(text.slice(s, i)); continue;
+    }
+    if (c === "/") { const s = i++; while (i < n && !ws(text[i]) && !delim(text[i])) i++; stack.push(text.slice(s, i)); continue; }
+    if (delim(c)) { i++; continue; }
+    const s = i; while (i < n && !ws(text[i]) && !delim(text[i])) i++;
+    const tok = text.slice(s, i);
+    if (/^[+-]?(\d+\.?\d*|\.\d+)$/.test(tok)) { stack.push(tok); continue; }
+    const a = stack; stack = [];
+    switch (tok) {
+      case "q": gstack.push([lw, sCS, sVals, sCut]); out.push("q"); break;
+      case "Q": { const g = gstack.pop(); if (g) [lw, sCS, sVals, sCut] = g; out.push("Q"); break; }
+      case "cm": if (a.length === 6) out.push(a.join(" ") + " cm"); break;
+      case "w": lw = a[0] || "1"; break;
+      case "CS": sCS = (a[0] || "").slice(1); sVals = ["1"]; sCut = cutRes.has(sCS); break;
+      case "SC": case "SCN": sVals = a.slice(); sCut = cutRes.has(sCS) && parseFloat(a[a.length - 1]) > 0; break;
+      case "G": case "RG": case "K": sCS = null; sCut = false; break;
+      case "m": case "l": case "c": case "v": case "y": case "re": path.push(a.join(" ") + " " + tok); break;
+      case "h": path.push("h"); break;
+      case "S": case "s": case "B": case "B*": case "b": case "b*":
+        if (sCut && path.length) { out.push(`q ${lw} w /${sCS} CS ${sVals.join(" ")} SCN ${path.join(" ")}${tok === "s" || tok === "b" || tok === "b*" ? " h" : ""} S Q`); found++; }
+        path = []; break;
+      case "f": case "F": case "f*": case "n": path = []; break;
+      case "Do": forms++; break;
+      case "BI": { const m = text.slice(i).search(/\sEI(\s|$)/); i = m < 0 ? n : i + m + 3; break; }
+      default: break;
+    }
+  }
+  return { text: out.join("\n"), found, forms };
+}
+async function pdfCutOnly(a){
+  const { PDFName, PDFArray, PDFDict } = PDFLib;
+  const src = await PDFLib.PDFDocument.load(a.pdfBytes, { ignoreEncryption:true, updateMetadata:false });
+  const page = src.getPage(a.pageIndex), res = pageResources(page);
+  const cutRes = new Set();
+  const csd = res && res.lookup(PDFName.of("ColorSpace"));
+  if (csd instanceof PDFDict) for (const [k, v] of csd.entries()) {
+    const arr = src.context.lookup(v);
+    if (arr instanceof PDFArray && arr.size() >= 2 && arr.get(0).asString && arr.get(0).asString() === "/Separation" && isCutSpot(pdfNameStr(arr.get(1)))) cutRes.add(k.asString().slice(1));
+  }
+  const parts = [];
+  const contents = page.node.Contents();
+  const streams = contents instanceof PDFArray ? contents.asArray().map(r => src.context.lookup(r)) : [contents];
+  for (const st of streams) { if (!st) continue; const bytes = st.contents && !st.dict.lookup(PDFName.of("Filter")) ? st.contents : PDFLib.decodePDFRawStream(st).decode(); let s = ""; for (let k = 0; k < bytes.length; k++) s += String.fromCharCode(bytes[k]); parts.push(s); }
+  const r = filterCutContent(parts.join("\n"), cutRes);
+  if (!r.found) return null;
+  page.node.set(PDFName.of("Contents"), src.context.register(src.context.flateStream(r.text)));
+  if (res instanceof PDFDict) for (const k of ["XObject", "Font", "Shading", "Pattern", "Properties"]) res.delete(PDFName.of(k));
+  const target = (state.spotName || "CutContour").trim() || "CutContour";
+  if (state.renameFileCut) walkSeparations(src.context, res, (arr, name) => { if (isCutSpot(name)) arr.set(1, PDFName.of(target)); });
+  return src.save();
+}
+
+async function loadPdf(f, base){
+  if (!window.pdfjsLib) throw new Error("the PDF reader didn't load; check your connection and reload");
+  const bytes = new Uint8Array(await f.arrayBuffer());
+  const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+  const n = Math.min(pdf.numPages, 50), out = [];
+  let src = null;
+  try { if (window.PDFLib) src = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption:true, updateMetadata:false }); } catch (e) { console.warn("cut-line scan skipped", e); }
+  if (pdf.numPages > 50) toast(`${f.name}: only the first 50 pages were added.`);
+  for (let i = 1; i <= n; i++) {
+    const page = await pdf.getPage(i);
+    const vp1 = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: 600 / Math.max(vp1.width, vp1.height) });
+    const c = document.createElement("canvas");
+    c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    const w = vp1.width / 72, h = vp1.height / 72;
+    out.push({ name: n > 1 ? `${base} p${i}` : base, srcName: n > 1 ? `${base} p${i}` : base, type:"pdf", w, h, natW:w, natH:h,
+      thumb: c.toDataURL("image/png"), pdfBytes: bytes, pageIndex: i - 1, pageRot: ((page.rotate || 0) % 360 + 360) % 360, pageCount: pdf.numPages });
+    const fc = src ? detectFileCut(src, i - 1) : [];
+    if (fc.length) { out[out.length - 1].fileCut = fc; out[out.length - 1].cut = false; }
+  }
+  const withCut = out.filter(a => a.fileCut).length;
+  if (withCut) toast(`${f.name}: found a cut line in the file (${[...new Set(out.flatMap(a => a.fileCut || []))].join(", ")}). It will be used instead of a rectangle.`);
+  return out;
+}
+function svgLen(v){
+  if (!v) return null;
+  const m = String(v).trim().match(/^([\d.]+)\s*(in|mm|cm|pt|pc|px)?$/i);
+  if (!m) return null;
+  const n = parseFloat(m[1]); const u = (m[2] || "px").toLowerCase();
+  return { in:n, mm:n/25.4, cm:n/2.54, pt:n/72, pc:n/6, px:n/96 }[u];
+}
+async function loadSvg(f, base){
+  const text = await f.text();
+  const doc = new DOMParser().parseFromString(text, "image/svg+xml");
+  const root = doc.documentElement;
+  if (!root || root.nodeName.toLowerCase() !== "svg") throw new Error("not a valid SVG");
+  const vb = (root.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+  const hasVB = vb.length === 4 && vb.every(isFinite) && vb[2] > 0 && vb[3] > 0;
+  let w = svgLen(root.getAttribute("width")), h = svgLen(root.getAttribute("height"));
+  if ((!w || !h) && hasVB) {
+    if (w && !h) h = w * vb[3] / vb[2];
+    else if (h && !w) w = h * vb[2] / vb[3];
+    else { w = vb[2] / 96; h = vb[3] / 96; }
+  }
+  if (!w || !h) { w = 4; h = 4; }
+  if (!hasVB) {
+    const uw = parseFloat(root.getAttribute("width")) || w * 96, uh = parseFloat(root.getAttribute("height")) || h * 96;
+    root.setAttribute("viewBox", `0 0 ${uw} ${uh}`);
+  }
+  if (!root.getAttribute("xmlns")) root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  const src = new XMLSerializer().serializeToString(root);
+  const c = await svgToCanvas(src, w, h, 600 / Math.max(w, h));
+  return [{ name: base, srcName: base, type:"svg", w, h, natW:w, natH:h, thumb: c.toDataURL("image/png"), svgSrc: src }];
+}
+async function svgToCanvas(src, wIn, hIn, ppi){
+  const pw = Math.max(1, Math.round(wIn * ppi)), ph = Math.max(1, Math.round(hIn * ppi));
+  const d = new DOMParser().parseFromString(src, "image/svg+xml");
+  const r = d.documentElement;
+  r.setAttribute("width", pw); r.setAttribute("height", ph); r.setAttribute("preserveAspectRatio", "none");
+  const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(r)], { type:"image/svg+xml" }));
+  try {
+    const img = await loadImg(url);
+    const c = document.createElement("canvas"); c.width = pw; c.height = ph;
+    c.getContext("2d").drawImage(img, 0, 0, pw, ph);
+    return c;
+  } finally { URL.revokeObjectURL(url); }
+}
+async function loadRaster(f, base, ext){
+  const img = await loadImg(await readDataURL(f));
+  let bytes, kind;
+  if (f.type === "image/png" || ext === "png") { bytes = new Uint8Array(await f.arrayBuffer()); kind = "png"; }
+  else if (f.type === "image/jpeg" || ext === "jpg" || ext === "jpeg") { bytes = new Uint8Array(await f.arrayBuffer()); kind = "jpg"; }
+  else {
+    const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    c.getContext("2d").drawImage(img, 0, 0);
+    bytes = new Uint8Array(await (await canvasBlob(c)).arrayBuffer()); kind = "png";
+  }
+  const ppi = state.imgPpi || 150, w = img.naturalWidth / ppi, h = img.naturalHeight / ppi;
+  return [{ name: base, srcName: base, type:"img", w, h, natW:w, natH:h, thumb: thumbFrom(img), imgBytes: bytes, imgKind: kind, px: [img.naturalWidth, img.naturalHeight] }];
+}
+
+/* ================= jobs ================= */
+function setSymbol(id, href){
+  let im = document.getElementById(id);
+  if (!im) {
+    im = document.createElementNS("http://www.w3.org/2000/svg", "image");
+    im.setAttribute("id", id); im.setAttribute("width", 1); im.setAttribute("height", 1); im.setAttribute("preserveAspectRatio", "none");
+    $("#defs").appendChild(im);
+  }
+  im.setAttribute("href", href);
+}
+function addJob(art, extra){
+  const j = Object.assign({ id:"j" + (++jid), qty:1, rotate:true, cut:true, lock:true, ds:false, back:null }, art, extra || {});
+  delete j.pageCount;
+  j.aspect = j.w / j.h;
+  jobs.push(j);
+  setSymbol("img-" + j.id, j.thumb);
+  return j;
+}
+function artOf(o){ const a = { name:o.srcName || o.name }; for (const k of ART_KEYS) if (o[k] !== undefined) a[k] = o[k]; return a; }
+function setBack(j, art){
+  j.back = art; j.ds = true;
+  setSymbol("img-" + j.id + "-b", art.thumb);
+}
+function removeJob(id, quiet){
+  jobs = jobs.filter(j => j.id !== id);
+  for (const s of ["img-" + id, "img-" + id + "-b"]) { const el = document.getElementById(s); if (el) el.remove(); }
+  if (!quiet) { renderJobs(); schedule(); }
+}
+function swapSides(j){
+  if (!j.back) return;
+  const front = artOf(j), back = j.back;
+  for (const k of ART_KEYS) { delete j[k]; if (back[k] !== undefined) j[k] = back[k]; }
+  j.srcName = back.name;
+  j.back = front;
+  setSymbol("img-" + j.id, j.thumb); setSymbol("img-" + j.id + "-b", front.thumb);
+}
+
+async function handleFiles(list){
+  const files = [...list];
+  if (!files.length) return;
+  toast(`Reading ${files.length} file${files.length > 1 ? "s" : ""}…`);
+  for (const f of files) {
+    try { const q = qtyFromName(f.name); for (const art of await loadAny(f)) addJob(art, q ? { qty:q } : undefined); }
+    catch (e) { console.error(e); toast(`${f.name} couldn't be read: ${e.message || e}`); }
+  }
+  renderJobs(); schedule();
+}
+let backTarget = null;
+async function handleBackFile(f){
+  const j = jobs.find(x => x.id === backTarget); backTarget = null;
+  if (!j || !f) return;
+  try {
+    const arts = await loadAny(f);
+    if (!arts.length) return;
+    if (arts[0].pageCount > 1) toast(`${f.name} has ${arts[0].pageCount} pages; page 1 is used as the back.`);
+    const a = arts[0]; delete a.pageCount;
+    setBack(j, a);
+  } catch (e) { console.error(e); toast(`${f.name} couldn't be read: ${e.message || e}`); }
+  renderJobs(); schedule();
+}
+
+async function addSamples(){
+  const samples = [
+    { name:"Yard sign", w:24, h:18, qty:10 }, { name:"Window decal", w:30, h:12, qty:4 },
+    { name:"Door logo", w:12, h:12, qty:8 }, { name:"Floor graphic", w:36, h:36, qty:2 },
+    { name:"Wall panel", w:40, h:22, qty:3 }, { name:"Parking", w:12, h:18, qty:6 }
+  ];
+  for (let i = 0; i < samples.length; i++) {
+    const s = samples[i], col = PALETTE[i % PALETTE.length];
+    const art = await sampleArt(s.name, s.w, s.h, col, "");
+    addJob(art, { qty: s.qty });
+  }
+  renderJobs(); schedule();
+}
+async function sampleArt(name, w, h, col, tag){
+  const k = 12, c = document.createElement("canvas"); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const g = c.getContext("2d"), mn = Math.min(c.width, c.height);
+  g.fillStyle = col; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = "rgba(255,255,255,.18)"; g.fillRect(k, k, c.width - 2 * k, c.height - 2 * k);
+  g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle";
+  let fs = Math.max(14, mn / 6); g.font = `600 ${fs}px Archivo, Arial, sans-serif`;
+  while (g.measureText(name + tag).width > c.width * 0.86 && fs > 10) { fs -= 2; g.font = `600 ${fs}px Archivo, Arial, sans-serif`; }
+  g.fillText(name + tag, c.width / 2, c.height / 2 - fs * 0.35);
+  g.font = `400 ${Math.max(11, fs * 0.6)}px Archivo, Arial, sans-serif`;
+  g.fillText(`${w} × ${h} in`, c.width / 2, c.height / 2 + fs * 0.75);
+  g.beginPath(); g.moveTo(c.width / 2, k * 1.4); g.lineTo(c.width / 2 - k * 0.8, k * 2.6); g.lineTo(c.width / 2 + k * 0.8, k * 2.6); g.closePath(); g.fill();
+  const bytes = new Uint8Array(await (await canvasBlob(c)).arrayBuffer());
+  return { name: name + tag, srcName: name + tag, type:"img", w, h, natW:w, natH:h, thumb: c.toDataURL("image/png"), imgBytes: bytes, imgKind:"png", px:[c.width, c.height], sample:true };
+}
+
+/* ================= jobs UI ================= */
+const LOCK_ON = '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const LOCK_OFF = '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+function artMeta(a, w){
+  if (a.type === "pdf") return a.fileCut && a.fileCut.length ? `PDF, <b class="fcut">cut line in file: ${esc(a.fileCut.join(", "))}</b>` : "PDF";
+  if (a.type === "svg") return "SVG (300 ppi on export)";
+  if (a.sample) return "Sample";
+  const ppi = Math.round(a.px[0] / w);
+  return `${a.imgKind.toUpperCase()}, <span class="${ppi < 100 ? "lowres" : ""}">${ppi} ppi</span>`;
+}
+function backShapeOff(j){ return j.back && Math.abs((j.back.natW / j.back.natH) / (j.w / j.h) - 1) > 0.015; }
+function renderJobs(){
+  const ul = $("#jobs");
+  ul.innerHTML = jobs.map(j => {
+    const others = jobs.filter(o => o.id !== j.id && !o.ds);
+    return `
+    <li class="job" data-id="${j.id}">
+      <img class="thumb" src="${j.thumb}" alt="">
+      <div>
+        <input class="job-name" value="${esc(j.name)}" aria-label="Job name">
+        <div class="job-size">
+          <label class="fld">Width (in)<input type="number" class="w" min="0" step="0.125" title="" value="${fmt(j.w)}"></label>
+          <button class="lock" aria-pressed="${j.lock}" title="Keep proportions" aria-label="Keep proportions">${j.lock ? LOCK_ON : LOCK_OFF}</button>
+          <label class="fld">Height (in)<input type="number" class="h" min="0" step="0.125" title="" value="${fmt(j.h)}"></label>
+          <label class="fld">Qty<input type="number" class="q" min="0" step="1" title="" value="${j.qty}"></label>
+        </div>
+        <div class="job-opts">
+          <label class="check"${state.rotate ? "" : ` style="opacity:.45" title="Rotation is off for all jobs (Media & spacing)"`}><input type="checkbox" class="rot" ${j.rotate ? "checked" : ""} ${state.rotate ? "" : "disabled"}> Rotate</label>
+          <label class="check"><input type="checkbox" class="cut" ${j.cut ? "checked" : ""}> ${j.fileCut && j.fileCut.length ? "Add rectangle too" : "Cut line"}</label>
+          <label class="check"><input type="checkbox" class="ds" ${j.ds ? "checked" : ""}> Double-sided</label>
+          <span class="placed" data-placed></span>
+        </div>
+        <div class="job-meta">Front: ${artMeta(j, j.w)}${state.bleed > EPS ? `, trims to ${fmt(Math.max(0, j.w - 2 * state.bleed))} × ${fmt(Math.max(0, j.h - 2 * state.bleed))} in` : ""}</div>
+        ${j.ds ? `
+        <div class="back-row">
+          ${j.back ? `<img class="thumb sm" src="${j.back.thumb}" alt="">` : `<div class="thumb sm noback">Back</div>`}
+          <div>
+            <div class="bname ${j.back ? "" : "none"}">${j.back ? "Back: " + esc(j.back.name) : "No back file yet"}</div>
+            ${j.back ? `<div class="job-meta" style="margin-top:2px">${artMeta(j.back, j.w)}${backShapeOff(j) ? ` <span class="lowres">· shape differs, stretched to ${fmt(j.w)} × ${fmt(j.h)} in</span>` : ""}</div>` : ""}
+            <div class="back-actions">
+              <button class="btn small" data-act="back-same">Same as front</button>
+              <button class="btn small" data-act="back-file">${j.back ? "Replace" : "Choose back file"}</button>
+              ${others.length ? `<select class="back-pick" aria-label="Use an uploaded job as the back"><option value="">Use an uploaded job…</option>${others.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join("")}</select>` : ""}
+              ${j.back ? `<button class="btn small" data-act="swap">Swap front/back</button><button class="btn small" data-act="back-clear">Remove back</button>` : ""}
+            </div>
+          </div>
+        </div>` : ""}
+      </div>
+      <button class="remove" aria-label="Remove ${esc(j.name)}">×</button>
+    </li>`; }).join("");
+  updatePlaced();
+}
+$("#jobs").addEventListener("input", e => {
+  const li = e.target.closest(".job"); if (!li) return;
+  const j = jobs.find(x => x.id === li.dataset.id); if (!j) return;
+  const t = e.target;
+  if (t.classList.contains("job-name")) { j.name = t.value; return; }
+  if (t.classList.contains("w")) { const v = num(t.value); if (v > 0) { j.w = v; if (j.lock) { j.h = v / j.aspect; li.querySelector(".h").value = fmt(j.h); } else j.aspect = j.w / j.h; schedule(); } }
+  if (t.classList.contains("h")) { const v = num(t.value); if (v > 0) { j.h = v; if (j.lock) { j.w = v * j.aspect; li.querySelector(".w").value = fmt(j.w); } else j.aspect = j.w / j.h; schedule(); } }
+  if (t.classList.contains("q")) { j.qty = Math.max(0, Math.round(num(t.value))); schedule(); }
+  if (t.classList.contains("rot")) { j.rotate = t.checked; schedule(); }
+  if (t.classList.contains("cut")) { j.cut = t.checked; schedule(); }
+});
+$("#jobs").addEventListener("change", e => {
+  const li = e.target.closest(".job"); if (!li) return;
+  const j = jobs.find(x => x.id === li.dataset.id); if (!j) return;
+  const t = e.target;
+  if (t.classList.contains("w") || t.classList.contains("h")) renderJobs();
+  if (t.classList.contains("ds")) { j.ds = t.checked; renderJobs(); schedule(); }
+  if (t.classList.contains("back-pick") && t.value) {
+    const o = jobs.find(x => x.id === t.value); if (!o) return;
+    setBack(j, artOf(o));
+    removeJob(o.id, true);
+    toast(`${o.name} is now the back of ${j.name}.`);
+    renderJobs(); schedule();
+  }
+});
+$("#jobs").addEventListener("click", e => {
+  const li = e.target.closest(".job"); if (!li) return;
+  const j = jobs.find(x => x.id === li.dataset.id); if (!j) return;
+  if (e.target.closest(".remove")) { removeJob(j.id); return; }
+  const lk = e.target.closest(".lock");
+  if (lk) { j.lock = !j.lock; j.aspect = j.w / j.h; lk.setAttribute("aria-pressed", j.lock); lk.innerHTML = j.lock ? LOCK_ON : LOCK_OFF; }
+  const act = e.target.closest("[data-act]")?.dataset.act;
+  if (act === "back-file") { backTarget = j.id; $("#backIn").click(); }
+  if (act === "back-clear") { j.back = null; const el = document.getElementById("img-" + j.id + "-b"); if (el) el.remove(); renderJobs(); schedule(); }
+  if (act === "swap") { swapSides(j); renderJobs(); schedule(); }
+  if (act === "back-same") { setBack(j, Object.assign(artOf(j), { name:"Same as front" })); renderJobs(); schedule(); }
+});
+function updatePlaced(){
+  const counts = {};
+  if (layout) for (const sh of layout.sheets) for (const it of sh.items) counts[it.job.id] = (counts[it.job.id] || 0) + 1;
+  document.querySelectorAll("#jobs .job").forEach(li => {
+    const j = jobs.find(x => x.id === li.dataset.id); const el = li.querySelector("[data-placed]");
+    if (!j || !el) return;
+    const n = counts[j.id] || 0;
+    el.textContent = n < j.qty ? `${n} of ${j.qty} placed` : `${n} placed`;
+    el.classList.toggle("bad", n < j.qty);
+  });
+}
+
+/* ================= nesting (MaxRects) ================= */
+function newBin(W, H){ return { W, H, free:[{ x:0, y:0, w:W, h:H }], used:[] }; }
+function findPos(b, p, heur){
+  let best = null, s1 = Infinity, s2 = Infinity;
+  const tryO = (w, h, rot) => {
+    for (const f of b.free) {
+      if (w <= f.w + EPS && h <= f.h + EPS) {
+        let a, c;
+        if (heur === "bl") { a = f.y + h; c = f.x; }
+        else if (heur === "lx") { a = f.x + w; c = f.y; }
+        else if (heur === "baf") { a = f.w * f.h - w * h; c = Math.min(f.w - w, f.h - h); }
+        else { const lw = f.w - w, lh = f.h - h; a = Math.min(lw, lh); c = Math.max(lw, lh); }
+        if (a < s1 - EPS || (Math.abs(a - s1) <= EPS && c < s2 - EPS)) { s1 = a; s2 = c; best = { x:f.x, y:f.y, w, h, rot }; }
+      }
+    }
+  };
+  const square = Math.abs(p.w - p.h) <= EPS;
+  if (p.pref && p.canRot && !square) {
+    const first = p.pref === "rot";
+    tryO(first ? p.h : p.w, first ? p.w : p.h, first);
+    if (best) return best;
+    tryO(first ? p.w : p.h, first ? p.h : p.w, !first);
+    return best;
+  }
+  tryO(p.w, p.h, false);
+  if (p.canRot && !square) tryO(p.h, p.w, true);
+  return best;
+}
+function placeRect(b, r, p){
+  const nf = [];
+  for (const f of b.free) {
+    if (r.x >= f.x + f.w - EPS || r.x + r.w <= f.x + EPS || r.y >= f.y + f.h - EPS || r.y + r.h <= f.y + EPS) { nf.push(f); continue; }
+    if (r.x > f.x + EPS) nf.push({ x:f.x, y:f.y, w:r.x - f.x, h:f.h });
+    if (r.x + r.w < f.x + f.w - EPS) nf.push({ x:r.x + r.w, y:f.y, w:f.x + f.w - (r.x + r.w), h:f.h });
+    if (r.y > f.y + EPS) nf.push({ x:f.x, y:f.y, w:f.w, h:r.y - f.y });
+    if (r.y + r.h < f.y + f.h - EPS) nf.push({ x:f.x, y:r.y + r.h, w:f.w, h:f.y + f.h - (r.y + r.h) });
+  }
+  const keep = [];
+  for (let i = 0; i < nf.length; i++) {
+    const a = nf[i]; let drop = false;
+    for (let j = 0; j < nf.length && !drop; j++) {
+      if (i === j) continue;
+      const c = nf[j];
+      if (a.x >= c.x - EPS && a.y >= c.y - EPS && a.x + a.w <= c.x + c.w + EPS && a.y + a.h <= c.y + c.h + EPS) {
+        const same = Math.abs(a.x - c.x) < EPS && Math.abs(a.y - c.y) < EPS && Math.abs(a.w - c.w) < EPS && Math.abs(a.h - c.h) < EPS;
+        if (!same || j < i) drop = true;
+      }
+    }
+    if (!drop) keep.push(a);
+  }
+  b.free = keep;
+  b.used.push({ x:r.x, y:r.y, w:r.w, h:r.h, rot:r.rot, p });
+}
+function pack(pieces, W, H, heur, obst){
+  const bins = [], over = [];
+  for (const p of pieces) {
+    let done = false;
+    for (const b of bins) { const r = findPos(b, p, heur); if (r) { placeRect(b, r, p); done = true; break; } }
+    if (!done) {
+      const b = newBin(W, H);
+      if (obst) placeRect(b, Object.assign({ rot:false }, obst), null);
+      const r = findPos(b, p, heur);
+      if (r) { placeRect(b, r, p); bins.push(b); } else over.push(p);
+    }
+  }
+  return { bins, over };
+}
+const SORTS = [
+  (a, b) => b.w * b.h - a.w * a.h,
+  (a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || b.w * b.h - a.w * a.h,
+  (a, b) => b.h - a.h || b.w - a.w,
+  (a, b) => b.w - a.w || b.h - a.h,
+  (a, b) => (b.w + b.h) - (a.w + a.h)
+];
+function rng32(seed){ return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function bestPack(pieces, W, H, roll, obst){
+  const longX = !roll && W >= H;
+  const heurs = roll ? ["bl", "bssf"] : longX ? ["lx", "bssf", "baf"] : ["bl", "bssf", "baf"];
+  const ext = (b, ax) => Math.max(...b.used.map(u => ax ? u.x + u.w : u.y + u.h));
+  // material first: fewest sheets, then the shortest run along the long side so the offcut stays in one usable piece
+  const score = r => [r.over.length, r.bins.length, r.bins.reduce((s, b) => s + ext(b, longX), 0), r.bins.reduce((s, b) => s + ext(b, !longX), 0)];
+  const better = (x, y) => { for (let i = 0; i < x.length; i++) { if (x[i] < y[i] - EPS) return true; if (x[i] > y[i] + EPS) return false; } return false; };
+  let best = null, bs = null;
+  const run = (ordered, hh) => { const r = pack(ordered, W, H, hh, obst); const s = score(r); if (!bs || better(s, bs)) { best = r; bs = s; } };
+  const n = pieces.length;
+  for (const srt of SORTS) { const ordered = pieces.slice().sort(srt); for (const hh of heurs) run(ordered, hh); if (n > 800) break; }
+  const iters = n <= 40 ? 60 : n <= 120 ? 24 : n <= 300 ? 8 : 0;
+  if (iters && pieces.some(p => p.canRot)) {
+    const rnd = rng32(7919 + n * 31);
+    const byJob = new Map();
+    for (const p of pieces) { if (!byJob.has(p.job)) byJob.set(p.job, []); byJob.get(p.job).push(p); }
+    for (let it = 0; it < iters; it++) {
+      const tagged = [];
+      for (const ps of byJob.values()) {
+        const k = Math.floor(rnd() * (ps.length + 1)), rest = rnd() < 0.5 ? null : "norot";
+        ps.forEach((p, i) => tagged.push(Object.assign({}, p, { pref: i < k ? "rot" : rest })));
+      }
+      tagged.sort(SORTS[Math.floor(rnd() * SORTS.length)]);
+      run(tagged, heurs[Math.floor(rnd() * heurs.length)]);
+    }
+  }
+  return best;
+}
+
+// Repeat one arrangement on every sheet for pieces that share a size, so all sheets in a run look the same.
+function consistentPack(pieces, W, H, roll, obst){
+  const base = bestPack(pieces, W, H, roll, obst);
+  if (!state.consistent || base.bins.length < 2) return base;
+  const cost = r => r.over.length * 1000 + r.bins.length;
+  // first try treating near-equal sizes as one size (rows line up); if that costs a sheet, fall back to exact sizes
+  for (const tol of [0.5, 0]) { const r = patternAttempt(pieces, W, H, roll, obst, tol); if (cost(r) <= cost(base)) return r; }
+  return base;
+}
+function patternAttempt(pieces, W, H, roll, obst, TOL){
+  // group pieces that are the same size within 1/2 in (files often differ by a hair); each group is laid out
+  // as if every piece were the group's largest size, and smaller pieces are centred in their slot, so the
+  // rows and columns line up on every sheet
+  const groups = [];
+  for (const p of pieces) {
+    const a = p.canRot ? Math.min(p.w, p.h) : p.w, b = p.canRot ? Math.max(p.w, p.h) : p.h;
+    let c = groups.find(c => c.canRot === p.canRot && Math.abs(c.a - a) <= TOL + EPS && Math.abs(c.b - b) <= TOL + EPS);
+    if (!c) { c = { a, b, A:a, B:b, canRot:p.canRot, ps:[] }; groups.push(c); }
+    c.ps.push(p); c.A = Math.max(c.A, a); c.B = Math.max(c.B, b);
+  }
+  const single = groups.length === 1, bins = [], rest = [];
+  let over = [], pid = 0;
+  for (const c of groups) {
+    const ps = c.ps;
+    const padded = p => c.canRot ? (p.w <= p.h ? [c.A, c.B] : [c.B, c.A]) : [c.A, c.B];
+    const proxies = ps.slice(0, 400).map(p => { const [pw, ph] = padded(p); return Object.assign({}, p, { w:pw, h:ph }); });
+    const trial = bestPack(proxies, W, H, roll, obst);
+    if (!trial.bins.length) { rest.push(...ps); continue; }
+    const cnt = b => b.used.filter(u => u.p).length;
+    const pat = trial.bins.reduce((a, b) => cnt(b) > cnt(a) ? b : a);
+    const slots = pat.used.filter(u => u.p), n = slots.length;
+    if (!n || (!single && ps.length < 2 * n)) { rest.push(...ps); continue; }
+    const ordered = ps.slice().sort((a, b) => jobs.indexOf(a.job) - jobs.indexOf(b.job));
+    const id = ++pid;
+    const build = list => {
+      const b = newBin(W, H); b.free = []; b.pattern = id;
+      if (obst) b.used.push(Object.assign({ rot:false, p:null }, obst));
+      list.forEach((p, i) => {
+        const s = slots[i], [pw, ph] = padded(p);
+        const rot = !(Math.abs(pw - s.w) < EPS && Math.abs(ph - s.h) < EPS);
+        const w = rot ? p.h : p.w, hh = rot ? p.w : p.h;
+        b.used.push({ x:s.x + (s.w - w) / 2, y:s.y + (s.h - hh) / 2, w, h:hh, rot, p, slot:i });
+      });
+      return b;
+    };
+    const full = Math.floor(ordered.length / n), rem = ordered.length - full * n;
+    for (let f = 0; f < full; f++) bins.push(build(ordered.slice(f * n, (f + 1) * n)));
+    if (rem) { if (single) bins.push(build(ordered.slice(full * n))); else rest.push(...ordered.slice(full * n)); }
+  }
+  if (rest.length) { const r = bestPack(rest, W, H, roll, obst); bins.push(...r.bins); over = r.over; }
+  return { bins, over };
+}
+
+/* ================= layout ================= */
+function qrBlockSize(){ return [state.qrSize + 2 * QZ, state.qrSize + 2 * QZ + QR_TEXT_BAND]; }
+function makeQR(x, y){ const [w, h] = qrBlockSize(); return { x, y, w, h, qx:x + QZ, qy:y + QZ, s:state.qrSize }; }
+function overlaps(a, b, pad=0){ return a.x < b.x + b.w + pad - EPS && b.x < a.x + a.w + pad - EPS && a.y < b.y + b.h + pad - EPS && b.y < a.y + a.h + pad - EPS; }
+
+const KEEP_OFFCUT = 12;   // leftover longer than this along the long side is kept in one piece
+const markLead = () => state.markEdge + state.markSize + state.markDist;
+function longAxisX(sh, roll){ return !roll && sh.mediaW >= sh.mediaH; }
+function shiftItems(sh, dx, dy){ for (const it of sh.items) { it.x += dx; it.y += dy; } }
+function bbox(items){
+  return { x0: Math.min(...items.map(i => i.x)), x1: Math.max(...items.map(i => i.x + i.w)), y0: Math.min(...items.map(i => i.y)), y1: Math.max(...items.map(i => i.y + i.h)) };
+}
+function balanceSheet(sh, m, roll){
+  if (!sh.items.length) return;
+  const W = sh.mediaW, H = sh.mediaH, lx = longAxisX(sh, roll);
+  // 1. centre lone pieces across the short side (e.g. the single upright poster beside a stacked pair)
+  for (let pass = 0; pass < 2; pass++) for (const it of sh.items) {
+    const others = sh.items.filter(o => o !== it);
+    if (lx) { if (!others.some(o => o.x < it.x + it.w - EPS && it.x < o.x + o.w - EPS)) it.y = m + (H - 2 * m - it.h) / 2; }
+    else { if (!others.some(o => o.y < it.y + it.h - EPS && it.y < o.y + o.h - EPS)) it.x = m + (W - 2 * m - it.w) / 2; }
+  }
+  // 2. centre the block across the short side
+  let b = bbox(sh.items);
+  const need = markLead();
+  // where to put spare room: split it if both sides get a mark strip, otherwise give it all to one side
+  const placeSlack = (slack, stripAtStart) => (slack >= 2 * need - EPS || slack < need - EPS) ? slack / 2 : (stripAtStart ? slack : 0);
+  {
+    const slack = (lx ? H : W) - 2 * m - (lx ? b.y1 - b.y0 : b.x1 - b.x0);
+    const off = placeSlack(slack, lx ? state.dirCorner[0] === "t" : state.dirCorner[1] === "l");
+    if (lx) shiftItems(sh, 0, m + off - b.y0); else shiftItems(sh, m + off - b.x0, 0);
+  }
+  // 2b. a column of pieces with some slack: if the slack all sits on one side, slide the column so the
+  //     other side also gets a row of marks (marks far apart register the cut more precisely)
+  {
+    const need = markLead(), lim = lx ? H : W, its = sh.items;
+    const spanA = it => lx ? [it.x, it.x + it.w] : [it.y, it.y + it.h];
+    const lo = it => lx ? it.y : it.x, hi = it => lx ? it.y + it.h : it.x + it.w;
+    const parent = its.map((_, i) => i), find = i => parent[i] === i ? i : (parent[i] = find(parent[i]));
+    for (let i = 0; i < its.length; i++) for (let j = i + 1; j < its.length; j++) {
+      const a = spanA(its[i]), c = spanA(its[j]);
+      if (a[0] < c[1] - EPS && c[0] < a[1] - EPS) parent[find(i)] = find(j);
+    }
+    const groups = new Map();
+    its.forEach((it, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(it); });
+    for (const g of groups.values()) {
+      const top = Math.min(...g.map(lo)) - m, bot = lim - m - Math.max(...g.map(hi));
+      if (Math.min(top, bot) < need - EPS && top + bot >= 2 * need - EPS) {
+        const d = top < bot ? need - top : -(need - bot);
+        for (const it of g) { if (lx) it.y += d; else it.x += d; }
+      }
+    }
+  }
+  // 3. along the long side: small leftovers are split for marks; big ones stay in one usable offcut
+  b = bbox(sh.items);
+  const lo = lx ? b.x0 : b.y0, ext = lx ? b.x1 - b.x0 : b.y1 - b.y0, lead = markLead();
+  const mv = d => lx ? shiftItems(sh, d, 0) : shiftItems(sh, 0, d);
+  if (roll) { mv(m + lead - lo); sh.workEnd = m + lead + ext + lead; sh.mediaH = sh.workEnd + m; return; }
+  const left = (lx ? W : H) - 2 * m - ext;
+  if (left <= KEEP_OFFCUT + EPS) { mv(m + placeSlack(left, lx ? state.dirCorner[1] === "l" : state.dirCorner[0] === "t") - lo); sh.workEnd = null; }
+  else { const ld = Math.min(lead, left / 2); mv(m + ld - lo); sh.workEnd = m + ld + ext + ld; }
+}
+function findQRSpot(sh, roll, limit){
+  const [qw, qh] = qrBlockSize(), W = sh.mediaW, H = sh.mediaH, e = Math.max(state.margin, 0.25), lx = longAxisX(sh, roll);
+  const xMax = (lx && limit != null ? Math.min(W - e, limit) : W - e) - qw;
+  const yMax = (!lx && limit != null ? Math.min(H - e, limit) : H - e) - qh;
+  if (xMax < e - EPS || yMax < e - EPS) return null;
+  const c = roll ? "t" + state.qrCorner[1] : state.qrCorner;
+  const tx = c[1] === "l" ? 0 : (lx && limit != null ? limit : W), ty = c[0] === "t" ? 0 : (!lx && limit != null ? limit : H);
+  const step = [0.25, 0.5, 1, 2].find(v => ((xMax - e) / v + 1) * ((yMax - e) / v + 1) <= 40000) || 4;
+  const xs = [], ys = [];
+  for (let x = e; x <= xMax + EPS; x += step) xs.push(x); xs.push(xMax);
+  for (let y = e; y <= yMax + EPS; y += step) ys.push(y); ys.push(yMax);
+  let best = null, bd = Infinity;
+  for (const y of ys) for (const x of xs) {
+    const r = { x, y, w:qw, h:qh };
+    if (sh.items.some(it => overlaps(r, it, 0.125))) continue;
+    const cx = c[1] === "l" ? x : x + qw, cy = c[0] === "t" ? y : y + qh;
+    const d = (cx - tx) ** 2 + (cy - ty) ** 2;
+    if (d < bd) { bd = d; best = r; }
+  }
+  return best ? makeQR(best.x, best.y) : null;
+}
+
+function layoutVariant(mm, strips){
+  const roll = state.mode !== "sheet", g = state.gap;
+  const frame = marksOn() && mm === "frame", free = marksOn() && mm === "free";
+  const m = state.margin + (frame ? state.markDist + state.markSize : 0);
+  const mediaW = roll ? rollWidth() : state.sheetW;
+  const W = mediaW - 2 * m + g;
+  const H = roll ? (state.rollMax > 0 ? state.rollMax - 2 * m + g : 1e6) : state.sheetH - 2 * m + g;
+  const res = { sheets:[], over:[], tooMany:false, roll, mediaW, qrMiss:false, mode: mm, inset:m, strips: !!strips };
+  // "strips": reserve a narrow band at both ends of the long side so even a full gang run has room for marks
+  const longSheetX = mediaW >= state.sheetH, lead = markLead();
+  const Wp = strips && !roll && longSheetX ? W - 2 * lead : W, Hp = strips && !roll && !longSheetX ? H - 2 * lead : H;
+  const all = [];
+  for (const j of jobs) { const [pw, ph] = pieceDims(j); for (let k = 0; k < j.qty; k++) all.push({ job:j, w:pw + g, h:ph + g, canRot: state.rotate && j.rotate }); }
+  if (!all.length || W <= 0 || H <= 0) return res;
+  if (all.length > 3000) { res.tooMany = true; return res; }
+  const groups = state.dsSeparate ? [all.filter(p => !p.job.ds), all.filter(p => p.job.ds)].filter(x => x.length) : [all];
+  let cornerObst = null;
+  if (qrOn()) {
+    const [qw, qh] = qrBlockSize(), ow = qw + g, oh = qh + g;
+    const c = roll ? "t" + state.qrCorner[1] : state.qrCorner;
+    if (ow <= Wp + EPS && oh <= Hp + EPS) {
+      // reserve a full-length strip for the QR (not a corner notch) so rows and columns stay lined up
+      const qx = c[1] === "l" ? 0 : Wp - ow, qy = c[0] === "t" ? 0 : Hp - oh, longX = !roll && Wp >= Hp;
+      cornerObst = longX ? { x:qx, y:0, w:ow, h:Hp, qx, qy } : { x:0, y:qy, w:Wp, h:oh, qx, qy };
+    }
+    else res.qrMiss = true;
+  }
+  const overJobs = {};
+  for (const grp of groups) {
+    const toSheets = (best, obst) => best.bins.map(b => {
+      const usedLen = Math.max(...b.used.map(u => u.y + u.h));
+      const sh = { mediaW, mediaH: roll ? usedLen - g + 2 * m : state.sheetH, qr:null, workEnd:null,
+        pattern: b.pattern || 0,
+        items: b.used.filter(u => u.p).map(u => ({ job:u.p.job, x:m + u.x, y:m + u.y, w:(u.rot ? u.p.h : u.p.w) - g, h:(u.rot ? u.p.w : u.p.h) - g, rot:u.rot, slot:u.slot })) };
+      if (obst) sh.qr = makeQR(m + (obst.qx ?? obst.x), m + (obst.qy ?? obst.y));
+      return sh;
+    });
+    let sheets, best;
+    if (free) {
+      best = consistentPack(grp, Wp, Hp, roll, null);
+      sheets = toSheets(best, null);
+      if (state.balance || strips) {
+        // pattern sheets: arrange one full sheet, then copy its slot positions to every sheet of that pattern
+        const done = new Set();
+        for (const sh of sheets) {
+          if (!sh.pattern || roll) { balanceSheet(sh, m, roll); continue; }
+          if (done.has(sh.pattern)) continue;
+          done.add(sh.pattern);
+          const group = sheets.filter(s => s.pattern === sh.pattern);
+          const rep0 = group.reduce((a, b) => b.items.length > a.items.length ? b : a);
+          balanceSheet(rep0, m, roll);
+          const pos = new Map(rep0.items.map(it => [it.slot, [it.x, it.y]]));
+          for (const s of group) { if (s === rep0) continue; for (const it of s.items) { const q = pos.get(it.slot); if (q) { it.x = q[0]; it.y = q[1]; } } s.workEnd = rep0.workEnd; }
+        }
+      }
+      if (qrOn() && !res.qrMiss) {
+        for (const sh of sheets) {
+          let q = findQRSpot(sh, roll, sh.workEnd);
+          if (!q && sh.workEnd != null) {
+            q = findQRSpot(sh, roll, null);
+            if (q) {
+              const lx = longAxisX(sh, roll);
+              sh.workEnd = Math.max(sh.workEnd, (lx ? q.x + q.w : q.y + q.h) + 0.25);
+              if (roll) sh.mediaH = sh.workEnd + m;
+            }
+          }
+          sh.qr = q;
+        }
+        if (sheets.some(sh => !sh.qr) && cornerObst) {
+          const alt = consistentPack(grp, Wp, Hp, roll, cornerObst);
+          if (alt.over.length <= best.over.length && alt.bins.length <= best.bins.length) { best = alt; sheets = toSheets(alt, cornerObst); }
+          else sheets.forEach(sh => { if (!sh.qr) sh.qrNoRoom = true; });
+        }
+      }
+    } else {
+      best = consistentPack(grp, Wp, Hp, roll, qrOn() ? cornerObst : null);
+      sheets = toSheets(best, qrOn() ? cornerObst : null);
+    }
+    if (!roll) sheets.sort((a, b) => itemsArea(b.items) - itemsArea(a.items));
+    sheets.forEach(sh => { sh.ds = sh.items.some(it => it.job.ds); });
+    res.sheets.push(...sheets);
+    for (const p of best.over) overJobs[p.job.id] = p.job;
+  }
+  res.over = Object.values(overJobs);
+  res.sheets.forEach((sh, i) => {
+    sh.name = fileName(i);
+    sh.sig = i + "|" + fmt(sh.mediaW) + "x" + fmt(sh.mediaH) + "|" + sh.items.map(it => `${it.job.id}:${fmt(it.x)},${fmt(it.y)},${it.rot ? 1 : 0}`).join(";") + (sh.qr ? `|q${fmt(sh.qr.x)},${fmt(sh.qr.y)}` : "");
+    sh.autoMarks = !marksOn() ? [] : mm === "free" ? freeMarks(sh, roll) : frameMarks(sh);
+    // how far along the long side the job reaches; the rest is offcut
+    const lx = longAxisX(sh, roll), r = state.markSize / 2;
+    let end = sh.workEnd != null ? sh.workEnd : 0;
+    if (sh.workEnd == null) {
+      for (const it of sh.items) end = Math.max(end, lx ? it.x + it.w : it.y + it.h);
+      if (sh.qr) end = Math.max(end, lx ? sh.qr.x + sh.qr.w : sh.qr.y + sh.qr.h);
+      for (const p of sh.autoMarks) end = Math.max(end, (lx ? p.x : p.y) + r);
+    }
+    sh.usedEnd = end;
+    const long = lx ? sh.mediaW : sh.mediaH;
+    sh.offcut = !roll && long - end >= 6 ? long - end : 0;
+  });
+  return res;
+}
+function layoutXY(){
+  const g = state.gap, W = state.rollW, sideM = state.xyEdge + state.xyMarkW + state.xyMarkOff, avail = W - 2 * sideM;
+  const [qw, qh] = qrBlockSize();
+  const lead = state.qr ? Math.max(state.xyLead, 0.25 + qh + 0.25) : state.xyLead, trail = Math.max(state.xyLead, state.xyTabL + 0.25);
+  const res = { sheets:[], over:[], tooMany:false, roll:true, mediaW:W, qrMiss:false, mode:"xy", inset:sideM, xyGroups:0 };
+  const groups = new Map();
+  for (const j of jobs) {
+    if (j.qty <= 0) continue;
+    const opts = [[j.w, j.h, false]];
+    if (state.rotate && j.rotate && Math.abs(j.w - j.h) > EPS) opts.push([j.h, j.w, true]);
+    let best = null;
+    for (const [w, hh, rot] of opts) {
+      const cols = Math.floor((avail + g + EPS) / (w + g)); if (cols < 1) continue;
+      const rows = Math.ceil(j.qty / cols), len = rows * hh + (rows - 1) * g;
+      if (!best || len < best.len - EPS) best = { w, h:hh, rot, cols, len };
+    }
+    if (!best) { res.over.push(j); continue; }
+    // same piece width + same column count = same Y-knife setup, so those jobs can share a panel
+    const key = `${fmt(best.w)}|${best.cols}` + (state.dsSeparate && j.ds ? "|ds" : "");
+    if (!groups.has(key)) groups.set(key, { w:best.w, cols:best.cols, rows:[] });
+    const gr = groups.get(key);
+    for (let left = j.qty; left > 0; left -= best.cols) gr.rows.push({ job:j, h:best.h, rot:best.rot, n:Math.min(best.cols, left) });
+  }
+  res.xyGroups = groups.size;
+  const maxLen = state.rollMax > 0 ? state.rollMax : Infinity;
+  for (const gr of groups.values()) {
+    const blockW = gr.cols * gr.w + (gr.cols - 1) * g, x0 = (W - blockW) / 2;
+    let sh = null, y = 0;
+    const finish = () => { if (sh && sh.items.length) { sh.mediaH = y - g + trail; res.sheets.push(sh); } };
+    const start = () => { sh = { mediaW:W, mediaH:0, items:[], qr:null, workEnd:null, xy:{ cols:gr.cols, w:gr.w, x0 } }; y = lead; };
+    start();
+    for (const row of gr.rows) {
+      if (sh.items.length && y + row.h + trail > maxLen + EPS) { finish(); start(); }
+      for (let c = 0; c < row.n; c++) {
+        const j = row.job;
+        sh.items.push({ job:j, x:x0 + c * (gr.w + g), y, w:row.rot ? j.h : j.w, h:row.rot ? j.w : j.h, rot:row.rot });
+      }
+      y += row.h + g;
+    }
+    finish();
+  }
+  res.sheets.forEach((sh, i) => {
+    sh.ds = sh.items.some(it => it.job.ds);
+    sh.name = fileName(i);
+    if (state.qr) sh.qr = makeQR(sh.xy.x0, 0.25);
+    sh.sig = "xy" + i + "|" + fmt(sh.mediaH) + "|" + sh.items.length;
+    sh.autoMarks = []; sh.usedEnd = sh.mediaH; sh.offcut = 0;
+  });
+  return res;
+}
+function xyCuts(sh){
+  const ys = new Set(), g = state.gap, bl = (state.bleed || 0) > EPS;
+  let last = -Infinity;
+  for (const it0 of sh.items) {
+    const it = trimRect(it0);
+    ys.add(+it.y.toFixed(4));
+    if (g > EPS || bl) ys.add(+(it.y + it.h).toFixed(4));
+    last = Math.max(last, it.y + it.h);
+  }
+  ys.add(+last.toFixed(4));
+  return [...ys].sort((a, b) => a - b);
+}
+// SAGA: two black lines down both sides of the art, plus a tab on the inside of each line at every X cut
+function xyMarks(sh){
+  if (!sh.xy || !sh.items.length) return [];
+  const t = state.xyMarkW, o = state.xyMarkOff, tw = state.xyTabW, tl = state.xyTabL, out = [];
+  const xL = Math.min(...sh.items.map(it => it.x)), xR = Math.max(...sh.items.map(it => it.x + it.w));
+  const lx = xL - o - t, rx = xR + o;
+  out.push({ x:lx, y:0, w:t, h:sh.mediaH }, { x:rx, y:0, w:t, h:sh.mediaH });
+  for (const y of xyCuts(sh)) out.push({ x:lx + t, y, w:tw, h:tl }, { x:rx - tw, y, w:tw, h:tl });
+  return out;
+}
+// Banner "impose only": every file is its own page at its own size (plus finishing), no ganging on a roll
+function layoutImpose(){
+  const m = state.margin, res = { sheets:[], over:[], tooMany:false, roll:true, mediaW:0, qrMiss:false, mode:"none", inset:m, impose:true };
+  for (const j of jobs) {
+    if (j.qty <= 0) continue;
+    const [pw, ph] = pieceDims(j);
+    res.sheets.push({ mediaW:pw + 2 * m, mediaH:ph + 2 * m, items:[{ job:j, x:m, y:m, w:pw, h:ph, rot:false }], qr:null, workEnd:null, ds:!!j.ds, copies:j.qty });
+  }
+  res.sheets.forEach((sh, i) => { sh.name = fileName(i); sh.sig = "imp" + i + "|" + fmt(sh.mediaW) + "x" + fmt(sh.mediaH); sh.autoMarks = []; sh.usedEnd = sh.mediaH; sh.offcut = 0; });
+  return res;
+}
+function computeLayout(){
+  if (isBanner() && state.bannerImpose) return layoutImpose();
+  if (isXY()) return layoutXY();
+  if (!marksOn()) return layoutVariant("none");
+  const need = Math.min(4, Math.round(state.markQty));
+  const okMarks = r => r.sheets.every(sh => sh.autoMarks.filter(p => !p.dirOf).length >= need);
+  const used = r => r.sheets.reduce((s, sh) => s + (r.roll ? sh.mediaH : sh.usedEnd), 0);
+  const key = r => [r.over.length, okMarks(r) ? 0 : 1, r.sheets.length, used(r)];
+  const pick = list => list.reduce((a, b) => { const ka = key(a), kb = key(b); for (let i = 0; i < ka.length; i++) { if (kb[i] < ka[i] - 0.25) return b; if (kb[i] > ka[i] + 0.25) return a; } return a; });
+  if (state.markMode === "frame") return layoutVariant("frame");
+  const fe = layoutVariant("free");
+  const cands = state.markMode === "free" ? [fe] : [layoutVariant("frame"), fe];
+  if (!okMarks(fe) && !fe.roll) cands.push(layoutVariant("free", true));
+  return pick(cands);
+}
+
+/* ================= marks ================= */
+const mk = (x, y, dirOf=null) => ({ id:"m" + (++mkid), x, y, dirOf });
+function frameMarks(sh){
+  if (!sh.items.length) return [];
+  const sz = state.markSize, o = state.markDist + sz / 2;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const b of sh.items.concat(sh.qr ? [sh.qr] : [])) { x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); }
+  const L = x0 - o, R = x1 + o, T = y0 - o, B = y1 + o, c = state.dirCorner;
+  const corner = { tl:mk(L, T), tr:mk(R, T), bl:mk(L, B), br:mk(R, B) };
+  const pts = [corner[c], ...["tl","tr","bl","br"].filter(k => k !== c).map(k => corner[k])];
+  const extra = Math.max(0, Math.round(state.markQty) - 4), a = Math.ceil(extra / 2), b = extra - a;
+  if (R - L >= B - T) {
+    for (let i = 1; i <= a; i++) pts.push(mk(L + (R - L) * i / (a + 1), T));
+    for (let i = 1; i <= b; i++) pts.push(mk(L + (R - L) * i / (b + 1), B));
+  } else {
+    for (let i = 1; i <= a; i++) pts.push(mk(L, T + (B - T) * i / (a + 1)));
+    for (let i = 1; i <= b; i++) pts.push(mk(R, T + (B - T) * i / (b + 1)));
+  }
+  const p = corner[c];
+  pts.push(mk(p.x + (c[1] === "l" ? 1 : -1) * state.dirSpacing, p.y, p.id));
+  return pts;
+}
+function freeChecker(sh, roll){
+  const r = state.markSize / 2, clr = state.markDist + r, e = state.markEdge + r, lx = longAxisX(sh, roll);
+  const W = lx && sh.workEnd != null ? sh.workEnd : sh.mediaW, H = !lx && sh.workEnd != null ? sh.workEnd : sh.mediaH;
+  const avoid = sh.items.concat(sh.qr ? [sh.qr] : []);
+  const ok = (x, y) => x >= e - EPS && x <= W - e + EPS && y >= e - EPS && y <= H - e + EPS &&
+    !avoid.some(b => x > b.x - clr + EPS && x < b.x + b.w + clr - EPS && y > b.y - clr + EPS && y < b.y + b.h + clr - EPS);
+  return { ok, e, W, H };
+}
+function freeMarks(sh, roll){
+  if (!sh.items.length) return [];
+  const { ok, e, W, H } = freeChecker(sh, roll);
+  if (W - e < e || H - e < e) return [];
+  const step = [0.25, 0.5, 1, 2, 4].find(v => (W / v) * (H / v) <= 90000) || 8;
+  const xs = [], ys = [];
+  for (let x = e; x < W - e - EPS; x += step) xs.push(x); xs.push(W - e);
+  for (let y = e; y < H - e - EPS; y += step) ys.push(y); ys.push(H - e);
+  const cand = [];
+  for (const y of ys) for (const x of xs) if (ok(x, y)) cand.push([x, y]);
+  const n = Math.max(0, Math.round(state.markQty)), sp2 = state.markSpacing ** 2 - EPS;
+  const sel = [], d2 = (p, q) => (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2;
+  const corners = { tl:[0, 0], tr:[W, 0], bl:[0, H], br:[W, H] };
+  const c = state.dirCorner, opp = (c[0] === "t" ? "b" : "t") + (c[1] === "l" ? "r" : "l");
+  for (const k of [c, opp, ...["tl","tr","bl","br"].filter(k => k !== c && k !== opp)]) {
+    if (sel.length >= n) break;
+    let best = null, bd = Infinity;
+    for (const p of cand) { if (!sel.every(s => d2(s, p) >= sp2)) continue; const d = d2(p, corners[k]); if (d < bd) { bd = d; best = p; } }
+    if (best) sel.push(best);
+  }
+  while (sel.length < n) {
+    let best = null, bd = -1;
+    for (const p of cand) { let md = Infinity; for (const s of sel) { const d = d2(p, s); if (d < md) md = d; } if (md > bd) { bd = md; best = p; } }
+    if (!best || bd < sp2) break;
+    sel.push(best);
+  }
+  const marks = sel.map(p => mk(p[0], p[1]));
+  if (marks.length) {
+    const pa = marks[0], D = state.dirSpacing, sx = c[1] === "l" ? 1 : -1, sy = c[0] === "t" ? 1 : -1;
+    for (const [dx, dy] of [[sx * D, 0], [0, sy * D], [-sx * D, 0], [0, -sy * D]]) {
+      const x = pa.x + dx, y = pa.y + dy;
+      if (ok(x, y) && marks.every(m => m === pa || Math.hypot(m.x - x, m.y - y) >= D - EPS)) { marks.push(mk(x, y, pa.id)); break; }
+    }
+  }
+  return marks;
+}
+function marksFor(sh){ return overrides.get(sh.sig) || sh.autoMarks || []; }
+function markIssues(sh, pts){
+  const r = state.markSize / 2, bad = new Set();
+  const avoid = sh.items.concat(sh.qr ? [sh.qr] : []);
+  for (const p of pts) {
+    if (p.x - r < -EPS || p.y - r < -EPS || p.x + r > sh.mediaW + EPS || p.y + r > sh.mediaH + EPS) { bad.add(p.id); continue; }
+    if (avoid.some(b => p.x > b.x - r && p.x < b.x + b.w + r && p.y > b.y - r && p.y < b.y + b.h + r)) bad.add(p.id);
+  }
+  return bad;
+}
+
+/* ================= double-sided geometry ================= */
+function backRot(it){ const f = it.rot ? 90 : 0; return state.flip === "h" ? (360 - f) % 360 : (540 - f) % 360; }
+function backBox(sh, b){
+  const x = state.flip === "h" ? sh.mediaW - b.x - b.w : b.x;
+  const y = state.flip === "h" ? b.y : sh.mediaH - b.y - b.h;
+  return { x: x + state.backNudgeX, y: y + state.backNudgeY, w: b.w, h: b.h };
+}
+function backPt(sh, p){
+  return { x: (state.flip === "h" ? sh.mediaW - p.x : p.x) + state.backNudgeX, y: (state.flip === "h" ? p.y : sh.mediaH - p.y) + state.backNudgeY };
+}
+function backQR(sh){ if (!sh.qr) return null; const b = backBox(sh, sh.qr); return makeQR(b.x, b.y); }
+
+/* ================= QR ================= */
+const qrCache = new Map();
+function qrRuns(text){
+  if (qrCache.has(text)) return qrCache.get(text);
+  if (!window.qrcode) return null;
+  const q = qrcode(0, "M"); q.addData(text); q.make();
+  const n = q.getModuleCount(), runs = [];
+  for (let r = 0; r < n; r++) { let c = 0; while (c < n) { if (q.isDark(r, c)) { const s = c; while (c < n && q.isDark(r, c)) c++; runs.push([r, s, c - s]); } else c++; } }
+  const out = { n, runs }; qrCache.set(text, out); return out;
+}
+function qrFontIn(name, w){ return Math.min(9 / 72, (w * 0.98) / (name.length * 0.56)); }
+
+/* ================= preview ================= */
+function rulerSVG(W, H, s){
+  const R = 22 / s, fs = 10 / s, parts = [];
+  const step = [0.25, 0.5, 1, 2, 3, 6, 12, 24, 48, 96, 120, 240].find(v => v * s >= 6) || 240;
+  const lab = [1, 2, 3, 6, 12, 24, 48, 96, 120, 240, 480, 960].find(v => v * s >= 46) || 960;
+  const isLab = v => Math.abs(v / lab - Math.round(v / lab)) < 1e-6;
+  for (let x = 0; x <= W + EPS; x += step) {
+    const L = isLab(x) ? R * 0.55 : (Math.abs(x - Math.round(x)) < EPS && step < 1 ? R * 0.35 : R * 0.22);
+    parts.push(`<line x1="${x}" y1="${-L}" x2="${x}" y2="0"/>`);
+    if (isLab(x)) parts.push(`<text x="${x + 3 / s}" y="${-R * 0.5}" font-size="${fs}">${fmt(x, 2)}</text>`);
+  }
+  for (let y = 0; y <= H + EPS; y += step) {
+    const L = isLab(y) ? R * 0.55 : (Math.abs(y - Math.round(y)) < EPS && step < 1 ? R * 0.35 : R * 0.22);
+    parts.push(`<line x1="${-L}" y1="${y}" x2="0" y2="${y}"/>`);
+    if (isLab(y) && y > 0) parts.push(`<text x="${-R + 2 / s}" y="${y + fs + 2 / s}" font-size="${fs}">${fmt(y, 2)}</text>`);
+  }
+  return `<g stroke="var(--mat-ink)" stroke-width="${1 / s}" fill="var(--mat-ink)" font-family="Archivo, Arial, sans-serif">${parts.join("")}</g>`;
+}
+function artUse(symId, box, rot, tw, th){
+  const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+  return `<use href="#${symId}" transform="translate(${cx} ${cy}) rotate(${rot}) translate(${-tw / 2} ${-th / 2}) scale(${tw} ${th})"/>`;
+}
+function qrSVG(qr, name){
+  const parts = [], q = qrRuns(name);
+  parts.push(`<rect x="${qr.x}" y="${qr.y}" width="${qr.w}" height="${qr.h}" fill="#fff"/>`);
+  if (q) { const md = qr.s / q.n; parts.push(`<path fill="#111" d="${q.runs.map(([r, c, l]) => `M${qr.qx + c * md} ${qr.qy + r * md}h${l * md}v${md}h${-l * md}z`).join("")}"/>`); }
+  else parts.push(`<rect x="${qr.qx}" y="${qr.qy}" width="${qr.s}" height="${qr.s}" fill="none" stroke="#111" stroke-width="0.02"/>`);
+  const fs = qrFontIn(name, qr.s);
+  parts.push(`<text x="${qr.qx + qr.s / 2}" y="${qr.qy + qr.s + fs + 0.03}" font-size="${fs}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" fill="#111">${esc(name)}</text>`);
+  return parts.join("");
+}
+function marksSVG(sh, s, pts, editing){
+  const ms = Math.max(state.markSize, (editing ? 10 : 3.5) / s), out = [];
+  const bad = editing ? markIssues(sh, pts) : new Set();
+  for (const p of pts) if (p.dirOf && editing) { const q = pts.find(x => x.id === p.dirOf); if (q) out.push(`<line x1="${q.x}" y1="${q.y}" x2="${p.x}" y2="${p.y}" stroke="var(--sel)" stroke-width="${1.5 / s}"/>`); }
+  for (const p of pts) {
+    const isSel = editing && selMark && selMark.sig === sh.sig && selMark.id === p.id;
+    out.push(`<g data-mk="${p.id}">`);
+    if (editing) out.push(`<circle cx="${p.x}" cy="${p.y}" r="${14 / s}" fill="transparent"/><circle cx="${p.x}" cy="${p.y}" r="${ms / 2 + 2 / s}" fill="#fff" stroke="${p.dirOf ? "var(--sel)" : "#111"}" stroke-width="${1 / s}"/>`);
+    out.push(state.markShape === "square"
+      ? `<rect x="${p.x - ms / 2}" y="${p.y - ms / 2}" width="${ms}" height="${ms}" fill="#111"/>`
+      : `<circle cx="${p.x}" cy="${p.y}" r="${ms / 2}" fill="#111"/>`);
+    if (isSel || bad.has(p.id)) out.push(`<circle cx="${p.x}" cy="${p.y}" r="${ms / 2 + 6 / s}" fill="none" stroke="${bad.has(p.id) ? "#E5372B" : "var(--sel)"}" stroke-width="${2.5 / s}"/>`);
+    out.push(`</g>`);
+  }
+  return out.join("");
+}
+function sheetScale(sh){
+  const mat = $("#mat");
+  const availW = Math.max(240, mat.clientWidth - 52), availH = Math.max(320, mat.clientHeight - 170);
+  let s = (availW - 22) / sh.mediaW;
+  s = layout.roll ? Math.min(s, 12) : Math.min(s, (availH - 22) / sh.mediaH);
+  return Math.max(s, 0.5);
+}
+function sheetSVG(sh, i){
+  const W = sh.mediaW, H = sh.mediaH, s = sheetScale(sh), R = 22 / s, m = state.margin, back = side === "back";
+  const editing = unlocked && !back;
+  const parts = [`<rect data-media x="0" y="0" width="${W}" height="${H}" fill="var(--sheet)"/>`];
+  if (m > 0) parts.push(`<rect x="${m}" y="${m}" width="${Math.max(0, W - 2 * m)}" height="${Math.max(0, H - 2 * m)}" fill="none" stroke="#9AA59F" stroke-width="${1 / s}" stroke-dasharray="${4 / s} ${3 / s}" pointer-events="none"/>`);
+  const g = ['<g pointer-events="none">'];
+  for (const it of sh.items) {
+    const j = it.job;
+    if (!back) {
+      g.push(`<g><title>${esc(j.name)}, ${fmt(j.w)} × ${fmt(j.h)} in${it.rot ? ", rotated" : ""}${j.ds ? ", double-sided" : ""}</title>${artUse("img-" + j.id, artBox(it), it.rot ? 90 : 0, j.w, j.h)}` +
+        bannerFlaps(it).map(f => { const id = "flap" + (++flapUid); return `<clipPath id="${id}"><rect x="${f.clip.x}" y="${f.clip.y}" width="${f.clip.w}" height="${f.clip.h}"/></clipPath><g clip-path="url(#${id})">${artUse("img-" + j.id + "-b", f.box, f.rot, j.w, j.h)}</g>`; }).join("") +
+        (() => { const t = cutRect(it); return `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" fill="none" stroke="${j.cut ? "var(--cut)" : "#8A948F"}" stroke-width="${(j.cut ? 1.3 : 0.8) / s}"/>`; })() + `</g>`);
+      if (state.cropMarks || (isBanner() && state.bannerCrop)) g.push(cropSegs(it).map(([a, b, c, d]) => `<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="#111" stroke-width="${0.8 / s}"/>`).join(""));
+      if (bannerFinish()) {
+        const f = foldRect(it), bm = bannerMarks(it);
+        g.push(`<rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" fill="none" stroke="#1E7FD8" stroke-opacity=".7" stroke-width="${1 / s}" stroke-dasharray="${5 / s} ${4 / s}"/>`);
+        g.push(bm.lines.map(([a, b, c, d]) => `<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="#111" stroke-width="${0.8 / s}"/>`).join(""));
+        const gr = Math.max(0.15, 3 / s);
+        g.push(bm.gromm.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${gr}" fill="#fff" fill-opacity=".6" stroke="#111" stroke-width="${1 / s}"/><path d="M${x - gr * 1.4} ${y}h${gr * 2.8}M${x} ${y - gr * 1.4}v${gr * 2.8}" stroke="#111" stroke-width="${0.8 / s}"/>`).join(""));
+      }
+    } else {
+      const bb = backBox(sh, it);
+      if (j.ds && j.back) g.push(`<g><title>${esc(j.name)} back</title>${artUse("img-" + j.id + "-b", backBox(sh, artBox(it)), backRot(it), j.w, j.h)}<rect x="${bb.x}" y="${bb.y}" width="${bb.w}" height="${bb.h}" fill="none" stroke="#8A948F" stroke-width="${0.8 / s}" stroke-dasharray="${4 / s} ${3 / s}"/></g>`);
+      else g.push(`<g><title>${esc(j.name)}: ${j.ds ? "no back file yet" : "single-sided, back left blank"}</title><rect x="${bb.x}" y="${bb.y}" width="${bb.w}" height="${bb.h}" fill="${j.ds ? "rgba(229,55,43,.12)" : "rgba(0,0,0,.05)"}" stroke="${j.ds ? "#E5372B" : "#9AA59F"}" stroke-width="${1 / s}" stroke-dasharray="${4 / s} ${3 / s}"/>` +
+        `<text x="${bb.x + bb.w / 2}" y="${bb.y + bb.h / 2}" font-size="${Math.min(bb.w, bb.h) / 10}" text-anchor="middle" fill="${j.ds ? "#B4261C" : "#8A948F"}" font-family="Archivo, Arial, sans-serif">${j.ds ? "Back file missing" : "Blank"}</text></g>`);
+    }
+  }
+  if (!back && sh.qr) g.push(qrSVG(sh.qr, sh.name + "_FRONT"));
+  if (sh.xy) {
+    const rects = (back ? (state.backMarks ? xyMarks(sh).map(r => backBox(sh, r)) : []) : xyMarks(sh));
+    if (!back) {
+      const ys = xyCuts(sh), xs = [...new Set(sh.items.map(trimRect).flatMap(it => [it.x, it.x + it.w]).map(v => +v.toFixed(4)))];
+      g.push(ys.map(y => `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#1E7FD8" stroke-opacity=".45" stroke-width="${1 / s}" stroke-dasharray="${5 / s} ${4 / s}"/>`).join(""));
+      g.push(xs.map(x => `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#1E7FD8" stroke-opacity=".45" stroke-width="${1 / s}" stroke-dasharray="${5 / s} ${4 / s}"/>`).join(""));
+    }
+    g.push(rects.map(r => `<rect x="${r.x}" y="${r.y}" width="${Math.max(r.w, 1.5 / s)}" height="${Math.max(r.h, 1.5 / s)}" fill="#111"/>`).join(""));
+  }
+  if (back && state.backMarks && sh.qr) g.push(qrSVG(backQR(sh), sh.name + "_BACK"));
+  g.push("</g>");
+  parts.push(g.join(""));
+  if (!back && sh.offcut) {
+    const lx = longAxisX(sh, layout.roll), e = sh.usedEnd;
+    parts.push(lx ? `<rect x="${e}" y="0" width="${W - e}" height="${H}" fill="url(#offcutHatch)" pointer-events="none"/><line x1="${e}" y1="0" x2="${e}" y2="${H}" stroke="#7A8780" stroke-width="${1 / s}" stroke-dasharray="${6 / s} ${4 / s}" pointer-events="none"/>`
+      : `<rect x="0" y="${e}" width="${W}" height="${H - e}" fill="url(#offcutHatch)" pointer-events="none"/><line x1="0" y1="${e}" x2="${W}" y2="${e}" stroke="#7A8780" stroke-width="${1 / s}" stroke-dasharray="${6 / s} ${4 / s}" pointer-events="none"/>`);
+  }
+  const pts = back ? (state.backMarks ? marksFor(sh).map(p => Object.assign({}, p, backPt(sh, p))) : []) : marksFor(sh);
+  parts.push(`<g data-marks>${marksSVG(sh, s, pts, editing)}</g>`);
+  parts.push(`<rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="${1 / s}" pointer-events="none"/>`);
+  return `<svg width="${(W + R) * s}" height="${(H + R) * s}" viewBox="${-R} ${-R} ${W + R} ${H + R}" role="img" aria-label="${layout.roll ? "Panel" : "Sheet"} ${i + 1} ${side}">${rulerSVG(W, H, s)}${parts.join("")}</svg>`;
+}
+function figHTML(sh, i){
+  const total = layout.sheets.length, unit = layout.roll ? "Panel" : "Sheet", W = sh.mediaW, H = sh.mediaH;
+  const util = itemsArea(sh.items) / (W * H) * 100;
+  const back = side === "back";
+  const lenTxt = layout.roll ? `${fmt(H, 2)} in long (${fmt(H / 12, 2)} ft)` : `${fmt(W, 2)} × ${fmt(H, 2)} in`;
+  const nMarks = marksFor(sh).length;
+  const xyInfo = sh.xy ? `<span>${sh.xy.cols} across</span><span>${xyCuts(sh).length} X cuts</span>` : "";
+  const fname = `${sh.name}${back ? "_BACK" : "_FRONT"}.pdf`;
+  const caption = `<b>${unit} ${i + 1} of ${total}${back ? ", back" : ""}</b>${fname ? `<span>${esc(fname)}</span>` : ""}<span>${lenTxt}</span><span>${sh.copies ? `print ${sh.copies}×` : `${sh.items.length} pieces`}</span>` +
+    (back ? "" : `<span>${util.toFixed(1)}% used</span>${marksOn() ? `<span>${nMarks} marks${overrides.has(sh.sig) ? " (edited)" : ""}</span>` : ""}`) +
+    xyInfo + (sh.ds ? `<span>Double-sided</span>` : "") +
+    (!back && sh.offcut ? `<span>Offcut ${fmt(sh.offcut, 1)} × ${fmt(longAxisX(sh, layout.roll) ? sh.mediaH : sh.mediaW, 1)} in</span>` : "");
+  return `<figure class="fig${unlocked && !back ? " editing tool-" + editMode : ""}" data-i="${i}"><figcaption>${caption}</figcaption>${sheetSVG(sh, i)}</figure>`;
+}
+function renderLayout(){
+  const wrap = $("#sheets");
+  if (!jobs.length) {
+    wrap.innerHTML = `<div class="empty">
+      <h2>Lay out your next print run</h2>
+      <p>Add PDF, SVG, PNG or JPG artwork, set quantities, and the pieces nest onto your sheet or roll automatically. Export print files with cut lines, cutter marks and a QR file ID.</p>
+      <div class="actions"><button class="btn" data-act="add">Add files</button><button class="btn ghost" data-act="sample">Try sample jobs</button></div></div>`;
+    return;
+  }
+  if (!layout || !layout.sheets.length) { wrap.innerHTML = ""; return; }
+  const list = side === "back" ? layout.sheets.map((sh, i) => [sh, i]).filter(([sh]) => sh.ds) : layout.sheets.map((sh, i) => [sh, i]);
+  wrap.innerHTML = list.length ? list.map(([sh, i]) => figHTML(sh, i)).join("") :
+    `<div class="empty"><h2>No backs to show</h2><p>Turn on Double-sided on a job and add its back file.</p></div>`;
+}
+function renderFig(i){
+  const fig = document.querySelector(`#sheets figure[data-i="${i}"]`);
+  if (fig) fig.outerHTML = figHTML(layout.sheets[i], i);
+}
+function bleedOf(it){ return Math.max(0, Math.min(state.bleed || 0, it.w / 2 - 0.01, it.h / 2 - 0.01)); }
+function trimRect(it){ const b = bleedOf(it); return { x:it.x + b, y:it.y + b, w:it.w - 2 * b, h:it.h - 2 * b }; }
+function cropSegs(it0){
+  const it = cutRect(it0), b = isBanner() ? 0 : bleedOf(it0);
+  const o = Math.max(0.0625, b + 0.0625), L = 0.25, x0 = it.x, y0 = it.y, x1 = it.x + it.w, y1 = it.y + it.h;
+  return [
+    [x0 - o - L, y0, x0 - o, y0], [x0, y0 - o - L, x0, y0 - o],
+    [x1 + o, y0, x1 + o + L, y0], [x1, y0 - o - L, x1, y0 - o],
+    [x0 - o - L, y1, x0 - o, y1], [x0, y1 + o, x0, y1 + o + L],
+    [x1 + o, y1, x1 + o + L, y1], [x1, y1 + o, x1, y1 + o + L]
+  ];
+}
+function renderStats(){
+  const el = $("#stats");
+  if (!layout || !layout.sheets.length) { el.innerHTML = ""; return; }
+  const cp = sh => sh.copies || 1;
+  const media = layout.sheets.reduce((s, sh) => s + sh.mediaW * sh.mediaH * cp(sh), 0);
+  const used = layout.sheets.reduce((s, sh) => s + itemsArea(sh.items) * cp(sh), 0);
+  const pcs = layout.sheets.reduce((s, sh) => s + sh.items.length * cp(sh), 0);
+  const sqft = media / 144, st = [];
+  if (layout.impose) st.push([layout.sheets.length, layout.sheets.length === 1 ? "file" : "files"]);
+  else if (layout.roll) {
+    const len = layout.sheets.reduce((s, sh) => s + sh.mediaH, 0);
+    st.push([`${fmt(len / 12, 2)} ft`, `of ${fmt(layout.mediaW, 2)} in roll${layout.sheets.length > 1 ? `, ${layout.sheets.length} panels` : ""}`]);
+  } else st.push([layout.sheets.length, layout.sheets.length === 1 ? "sheet" : "sheets"]);
+  const dsN = layout.sheets.filter(sh => sh.ds).length;
+  if (dsN) st.push([dsN, "double-sided"]);
+  st.push([pcs, "pieces"]);
+  st.push([`${fmt(sqft, 1)}`, "sq ft media"]);
+  st.push([`${(used / media * 100).toFixed(1)}%`, "utilization"]);
+  el.innerHTML = st.map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+}
+function renderWarnings(){
+  const w = [];
+  if (layout && layout.tooMany) w.push("More than 3,000 pieces. Lower quantities or split the run into separate layouts.");
+  if (layout && layout.over.length) w.push(`Too large for the ${state.mode !== "sheet" ? "roll width" : "sheet"} after margins${layout.mode === "frame" ? " and the mark border" : ""}: ${layout.over.map(j => esc(j.name)).join(", ")}. ${layout.mode === "frame" ? "Try mark placement “In empty spaces”, " : ""}scale it down${state.rotate ? "" : ", turn on rotation"} or choose larger media.`);
+  if (layout && layout.mode === "xy") {
+    if (state.xyTabW > state.xyMarkOff + EPS) w.push(`The tabs (${fmt(state.xyTabW)} in wide) are wider than the space between line and art (${fmt(state.xyMarkOff)} in), so they print onto the artwork.`);
+    const close = layout.sheets.some(sh => { const c = xyCuts(sh); return c.some((v, i) => i && v - c[i - 1] < state.xyTabL - EPS); });
+    if (close) w.push(`Some X cuts are closer together than the tab length (${fmt(state.xyTabL)} in), so their tabs overlap. This happens with bleed or a small gap between rows: each gutter gets two cuts. Check how your SAGA handles double cuts, or shorten the tabs.`);
+    if (layout.xyGroups > 1) w.push("Pieces with different widths need different Y-knife positions, so each size is on its own panel.");
+    if (layout.sheets.some(sh => sh.items.some(it => it.job.ds)) ) {}
+  }
+  if (layout && layout.qrMiss) w.push(`The ${state.qrSize} in QR code doesn't fit inside the printable area, so it's left off.`);
+  if (state.qr && !window.qrcode && jobs.length) w.push("The QR generator didn't load, so QR codes can't be drawn. Check your connection and reload.");
+  if (layout && marksOn()) {
+    const n = Math.round(state.markQty);
+    layout.sheets.forEach((sh, i) => {
+      const pts = marksFor(sh), unit = `${layout.roll ? "Panel" : "Sheet"} ${i + 1}`;
+      const reg = pts.filter(p => !p.dirOf).length;
+      if (!overrides.has(sh.sig) && reg < n) w.push(reg === 0 ? `${unit}: the artwork covers the whole sheet, so there's no room for cut marks. Use a larger sheet, a smaller piece, or a margin.` : `${unit}: only ${reg} marks fit at ${fmt(state.markSpacing)} in spacing in the empty spaces. Unlock the marks to place more by hand or lower the spacing.`);
+      if (pts.length && !pts.some(p => p.dirOf)) w.push(`${unit}: no room for the direction dot beside the corner mark. Unlock the marks to place it by hand.`);
+      const bad = markIssues(sh, pts).size;
+      if (bad) w.push(`${unit}: ${bad} mark${bad > 1 ? "s" : ""} overlap artwork or run off the sheet (circled in red).`);
+    });
+    if (layout.sheets.some(sh => sh.qrNoRoom)) w.push(`No open space for the QR code on ${layout.sheets.map((sh, i) => sh.qrNoRoom ? (layout.roll ? "panel " : "sheet ") + (i + 1) : "").filter(Boolean).join(", ")}, and reserving a spot would cost a sheet, so it's left off there.`);
+    if (state.cutter === "colex" && n < 6) w.push("Fewer than 6 cut marks. Colex needs at least 6 per page.");
+  }
+  for (const j of jobs) {
+    if (j.ds && !j.back) w.push(`${esc(j.name)} is double-sided but has no back file yet.`);
+    if (backShapeOff(j)) w.push(`The back of ${esc(j.name)} is a different shape than the front, so it will be stretched to ${fmt(j.w)} × ${fmt(j.h)} in.`);
+  }
+  if (isBanner() && state.bannerCrop && state.gap < 0.375 && jobs.length) w.push("Banner cut marks sit just outside each corner. With a gap under 3/8 in they print onto the next banner; a 1/2 in gap or more is easier to cut by hand.");
+  if (state.cropMarks && state.gap < 0.375 && jobs.length) w.push("Crop marks sit 1/16 in outside each piece and run 1/4 in long. With a gap under 3/8 in they'll print over neighboring pieces.");
+  if (layout && layout.roll && layout.sheets.some(sh => sh.mediaH > 200)) w.push("A panel is longer than 200 in. Acrobat can't display pages that long, though most RIPs accept them. Set a max panel length if your workflow needs it.");
+  if (jobs.some(j => j.type === "img" && !j.sample && j.px[0] / j.w < 100)) w.push("Some raster artwork is under 100 ppi at its print size and may look soft up close.");
+  $("#warns").innerHTML = w.map(t => `<div class="warn">${t}</div>`).join("");
+}
+const TOOL_HINTS = {
+  move: "Drag any dot to move it, or select one and type its position. Arrow keys nudge the selected dot 1/8 in (Shift: 1 in); Delete removes it. The blue-ringed dot is the direction dot: it stays linked to its partner, so drag it or press an arrow to swing it to another side.",
+  add: "Click anywhere on the sheet to add a dot. Click an existing dot to select it.",
+  remove: "Click a dot to remove it. Removing the corner dot that carries the direction mark removes both."
+};
+function selectedMark(){
+  if (!selMark || !layout) return null;
+  const sh = layout.sheets.find(s => s.sig === selMark.sig); if (!sh) return null;
+  const m = marksFor(sh).find(p => p.id === selMark.id);
+  return m ? { sh, m } : null;
+}
+function renderSelBox(){
+  const sel = unlocked && side === "front" ? selectedMark() : null;
+  $("#selBox").hidden = !sel;
+  if (!sel) return;
+  const { m } = sel, x = $("#selX"), y = $("#selY");
+  if (document.activeElement !== x) x.value = fmt(m.x);
+  if (document.activeElement !== y) y.value = fmt(m.y);
+  x.disabled = y.disabled = !!m.dirOf;
+  $("#selDir").hidden = !!m.dirOf || marksFor(sel.sh).some(p => p.dirOf === m.id);
+  $("#selLabel").textContent = m.dirOf ? "Direction dot (linked)" : "Selected dot";
+}
+function renderMatbar(){
+  const anyDS = !!(layout && layout.sheets.some(sh => sh.ds));
+  if (!anyDS && side === "back") side = "front";
+  $("#sideSeg").hidden = !anyDS;
+  document.querySelectorAll("#sideSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.side === side));
+  const show = marksOn() && jobs.length > 0;
+  const lockIcon = open => open
+    ? '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 4.9-.7" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>'
+    : '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+  for (const id of ["#lockBtn", "#lockSide"]) {
+    const lb = $(id);
+    lb.hidden = id === "#lockBtn" ? !show : !marksOn();
+    lb.disabled = !show;
+    lb.setAttribute("aria-pressed", unlocked);
+    lb.innerHTML = lockIcon(unlocked) + (unlocked ? " Editing marks: click to lock" : " Marks locked: click to unlock");
+  }
+  const editing = unlocked && side === "front" && show;
+  $("#toolSeg").hidden = !editing;
+  document.querySelectorAll("#toolSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.tool === editMode));
+  const anyEdited = !!(layout && layout.sheets.some(sh => overrides.has(sh.sig)));
+  $("#resetMarks").hidden = !anyEdited || !marksOn();
+  $("#editHint").hidden = !editing;
+  $("#editHint").textContent = TOOL_HINTS[editMode];
+  renderSelBox();
+  $("#sideNote").textContent = side === "back"
+    ? `Back view, ${state.flip === "h" ? "flipped left to right" : "flipped top to bottom"}${state.backNudgeX || state.backNudgeY ? `, nudged ${fmt(state.backNudgeX)} / ${fmt(state.backNudgeY)} in` : ""}.${unlocked ? " Switch to Front to edit marks." : ""}`
+    : "";
+  const mu = $("#modeUsing");
+  mu.textContent = marksOn() && state.markMode === "auto" && layout && layout.sheets.length ? `→ ${layout.mode === "free" ? "empty spaces" : "around art"}` : "";
+}
+function update(){
+  const prevEdited = layout ? layout.sheets.filter(sh => overrides.has(sh.sig)).map(sh => sh.sig) : [];
+  layout = computeLayout();
+  const lost = prevEdited.filter(sig => !layout.sheets.some(sh => sh.sig === sig));
+  if (lost.length) { lost.forEach(sig => overrides.delete(sig)); toast("The layout changed, so hand-edited marks went back to automatic."); }
+  if (selMark && !layout.sheets.some(sh => sh.sig === selMark.sig)) selMark = null;
+  renderLayout(); renderStats(); renderWarnings(); renderMatbar(); updatePlaced();
+}
+
+/* ================= mark editing ================= */
+let editMode = "move";
+function svgPt(svg, e){
+  const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY;
+  const r = p.matrixTransform(svg.getScreenCTM().inverse()); return { x:r.x, y:r.y };
+}
+const snap = v => Math.round(v * 16) / 16;
+function ensureOverride(sh){
+  if (!overrides.has(sh.sig)) overrides.set(sh.sig, (sh.autoMarks || []).map(p => Object.assign({}, p)));
+  return overrides.get(sh.sig);
+}
+function placeDir(pts, d, vx, vy){
+  const P = pts.find(p => p.id === d.dirOf); if (!P) return;
+  const D = state.dirSpacing;
+  if (Math.abs(vx) >= Math.abs(vy)) { d.x = P.x + Math.sign(vx || 1) * D; d.y = P.y; }
+  else { d.x = P.x; d.y = P.y + Math.sign(vy) * D; }
+}
+function moveMark(pts, m, nx, ny){
+  if (m.dirOf) { const P = pts.find(p => p.id === m.dirOf); if (P) placeDir(pts, m, nx - P.x, ny - P.y); return; }
+  const dx = nx - m.x, dy = ny - m.y;
+  m.x = nx; m.y = ny;
+  for (const c of pts) if (c.dirOf === m.id) { c.x += dx; c.y += dy; }
+}
+function removeMark(sh, id){
+  const pts = ensureOverride(sh);
+  overrides.set(sh.sig, pts.filter(p => p.id !== id && p.dirOf !== id));
+  if (selMark && selMark.id === id) selMark = null;
+}
+function afterEdit(i){ renderFig(i); renderWarnings(); renderMatbar(); }
+function nearestMark(sh, p0, s){
+  let near = null, nd = Infinity;
+  for (const q of marksFor(sh)) { const d = Math.hypot(q.x - p0.x, q.y - p0.y) * s; if (d < nd) { nd = d; near = q; } }
+  return nd <= 14 ? near : null;
+}
+const sheetsEl = $("#sheets");
+sheetsEl.addEventListener("pointerdown", e => {
+  grabbed = false;
+  if (!unlocked || side !== "front" || !layout || e.button > 0) return;
+  const fig = e.target.closest("figure.fig"); if (!fig) return;
+  const svg = fig.querySelector("svg"), i = +fig.dataset.i, sh = layout.sheets[i], s = sheetScale(sh), p0 = svgPt(svg, e);
+  const near = nearestMark(sh, p0, s);
+  if (!near) return;
+  e.preventDefault(); grabbed = true;
+  if (editMode === "remove") { removeMark(sh, near.id); afterEdit(i); return; }
+  const pts = ensureOverride(sh);
+  const m = pts.find(p => p.id === near.id); if (!m) return;
+  selMark = { sig:sh.sig, id:m.id };
+  drag = { i, sh, m, svg, start:p0, ox:m.x, oy:m.y, s, moved:false };
+  try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+  svg.querySelector("[data-marks]").innerHTML = marksSVG(sh, s, pts, true);
+  renderSelBox();
+});
+sheetsEl.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const p = svgPt(drag.svg, e), dx = p.x - drag.start.x, dy = p.y - drag.start.y;
+  if (!drag.moved && Math.hypot(dx, dy) * drag.s < 3) return;
+  drag.moved = true;
+  const pts = overrides.get(drag.sh.sig);
+  moveMark(pts, drag.m, snap(drag.ox + dx), snap(drag.oy + dy));
+  drag.svg.querySelector("[data-marks]").innerHTML = marksSVG(drag.sh, drag.s, pts, true);
+  renderSelBox();
+});
+function endDrag(){
+  if (!drag) return;
+  const i = drag.i; drag = null;
+  afterEdit(i);
+}
+sheetsEl.addEventListener("pointerup", endDrag);
+sheetsEl.addEventListener("pointercancel", endDrag);
+sheetsEl.addEventListener("click", e => {
+  const act = e.target.closest("[data-act]");
+  if (act) { if (act.dataset.act === "add") $("#fileIn").click(); if (act.dataset.act === "sample") addSamples(); return; }
+  if (grabbed) { grabbed = false; return; }
+  if (!unlocked || side !== "front" || !layout) return;
+  const media = e.target.closest("[data-media]"); if (!media) return;
+  const fig = e.target.closest("figure.fig"), i = +fig.dataset.i, sh = layout.sheets[i];
+  if (editMode === "add") {
+    const p = svgPt(fig.querySelector("svg"), e);
+    const pts = ensureOverride(sh), m = mk(snap(p.x), snap(p.y));
+    pts.push(m); selMark = { sig:sh.sig, id:m.id };
+  } else selMark = null;
+  afterEdit(i);
+});
+document.addEventListener("keydown", e => {
+  if (!unlocked || !selMark || side !== "front" || !layout) return;
+  if (e.target.closest("input, select, textarea")) return;
+  const i = layout.sheets.findIndex(sh => sh.sig === selMark.sig); if (i < 0) return;
+  const sh = layout.sheets[i], pts = ensureOverride(sh), m = pts.find(p => p.id === selMark.id);
+  if (!m) return;
+  if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); removeMark(sh, m.id); afterEdit(i); return; }
+  if (e.key === "Escape") { selMark = null; afterEdit(i); return; }
+  const dirs = { ArrowLeft:[-1, 0], ArrowRight:[1, 0], ArrowUp:[0, -1], ArrowDown:[0, 1] };
+  if (dirs[e.key]) {
+    e.preventDefault();
+    const [dx, dy] = dirs[e.key];
+    if (m.dirOf) placeDir(pts, m, dx, dy);
+    else { const st = e.shiftKey ? 1 : 0.125; moveMark(pts, m, m.x + dx * st, m.y + dy * st); }
+    afterEdit(i);
+  }
+});
+function setSelFromInputs(){
+  const sel = selectedMark(); if (!sel || sel.m.dirOf) return;
+  const x = num($("#selX").value, NaN), y = num($("#selY").value, NaN);
+  if (!isFinite(x) || !isFinite(y)) return;
+  const i = layout.sheets.indexOf(sel.sh), pts = ensureOverride(sel.sh), m = pts.find(p => p.id === sel.m.id);
+  if (!m) return;
+  moveMark(pts, m, x, y); afterEdit(i);
+}
+$("#selX").addEventListener("change", setSelFromInputs);
+$("#selY").addEventListener("change", setSelFromInputs);
+$("#selDir").onclick = () => {
+  const sel = selectedMark(); if (!sel || sel.m.dirOf) return;
+  const i = layout.sheets.indexOf(sel.sh), pts = ensureOverride(sel.sh), m = pts.find(p => p.id === sel.m.id), D = state.dirSpacing;
+  if (!m) return;
+  const d = mk(m.x + D, m.y, m.id);
+  for (const [dx, dy] of [[D, 0], [-D, 0], [0, -D], [0, D]]) {
+    d.x = m.x + dx; d.y = m.y + dy;
+    if (!markIssues(sel.sh, [d]).size) break;
+  }
+  pts.push(d); selMark = { sig:sel.sh.sig, id:d.id }; afterEdit(i);
+};
+$("#selDel").onclick = () => { const sel = selectedMark(); if (!sel) return; const i = layout.sheets.indexOf(sel.sh); removeMark(sel.sh, sel.m.id); afterEdit(i); };
+$("#toolSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; editMode = b.dataset.tool; renderLayout(); renderMatbar(); });
+function toggleLock(){
+  unlocked = !unlocked;
+  if (!unlocked) selMark = null; else { editMode = "move"; if (side === "back") side = "front"; }
+  renderLayout(); renderMatbar();
+}
+$("#lockBtn").onclick = toggleLock;
+$("#lockSide").onclick = () => { toggleLock(); if (unlocked) { $("#mat").scrollIntoView({ behavior:"smooth", block:"start" }); toast("Marks unlocked. Use Move, Add dots or Remove dots above the preview."); } };
+$("#resetMarks").onclick = () => { if (layout) layout.sheets.forEach(sh => overrides.delete(sh.sig)); selMark = null; renderLayout(); renderWarnings(); renderMatbar(); toast("Marks are back to automatic."); };
+$("#sideSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; side = b.dataset.side; selMark = null; renderLayout(); renderMatbar(); });
+
+/* ================= export ================= */
+let downloads = null;
+(async () => { try { if (window.claude && window.claude.use) downloads = await window.claude.use("downloads"); } catch (e) {} })();
+async function saveFile(name, blob){
+  if (downloads) {
+    try { await downloads.save({ filename:name, data:blob }); toast(`Saved ${name}`); return; }
+    catch (e) {
+      if (e && e.code === "declined") return;
+      if (e && e.code === "too_large") { toast("That file is too large to save here. Try fewer sheets per export."); return; }
+      if (e && e.code === "rate_limited") { toast("A save prompt is already open."); return; }
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+const slug = () => (state.jobName || "layout").trim().replace(/[^\w\-]+/g, "-").replace(/^-+|-+$/g, "") || "layout";
+
+async function buildPdf(indices, mode){
+  const { PDFDocument, PDFName, PDFNumber, PDFOperator, StandardFonts, degrees, cmyk } = PDFLib;
+  const doc = await PDFDocument.create();
+  const ctx = doc.context;
+  const spot = (state.spotName || "CutContour").trim() || "CutContour";
+  const sepFn = ctx.obj({ FunctionType:2, Domain:[0, 1], C0:[0, 0, 0, 0], C1:[0, 1, 0, 0], N:1 });
+  const sepRef = ctx.register(ctx.obj([PDFName.of("Separation"), PDFName.of(spot), PDFName.of("DeviceCMYK"), sepFn]));
+  const gsRef = ctx.register(ctx.obj({ Type:"ExtGState", OP:true, op:true, OPM:1 }));
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const P = 72, black = cmyk(0, 0, 0, 1);
+  const op = (name, ...args) => PDFOperator.of(name, args.map(a => typeof a === "number" ? PDFNumber.of(+a.toFixed(4)) : (typeof a === "string" && a[0] === "/") ? PDFName.of(a.slice(1)) : a));
+  // cut-only files carry two PDF layers, "Cut" (cut paths) above "Mark" (registration marks and label)
+  let ocCut = null, ocMark = null;
+  if (mode === "cut") {
+    const S = PDFLib.PDFString;
+    ocCut = ctx.register(ctx.obj({ Type:"OCG", Name:S.of("Cut") }));
+    ocMark = ctx.register(ctx.obj({ Type:"OCG", Name:S.of("Mark") }));
+    doc.catalog.set(PDFName.of("OCProperties"), ctx.obj({ OCGs:[ocCut, ocMark], D:{ Name:S.of("Layers"), Order:[ocCut, ocMark], ON:[ocCut, ocMark] } }));
+  }
+  const layerOn = (page, name) => { if (ocCut) page.pushOperators(PDFOperator.of("BDC", [PDFName.of("OC"), PDFName.of(name)])); };
+  const layerOff = page => { if (ocCut) page.pushOperators(PDFOperator.of("EMC", [])); };
+  const cache = new Map();
+  const cutFallback = new Set();
+  const getEmb = async (key, a, j) => {
+    if (cache.has(key)) return cache.get(key);
+    let e;
+    if (a.type === "pdf") {
+      const bytes = a.fileCut && a.fileCut.length ? await pdfWithRenamedCut(a) : a.pdfBytes;
+      const [pg] = await doc.embedPdf(bytes, [a.pageIndex]); e = { kind:"page", obj:pg };
+    }
+    else if (a.type === "svg") {
+      const ppi = Math.min(300, 8000 / Math.max(j.w, j.h));
+      const c = await svgToCanvas(a.svgSrc, j.w, j.h, ppi);
+      e = { kind:"img", obj: await doc.embedPng(new Uint8Array(await (await canvasBlob(c)).arrayBuffer())) };
+    } else e = { kind:"img", obj: a.imgKind === "jpg" ? await doc.embedJpg(a.imgBytes) : await doc.embedPng(a.imgBytes) };
+    cache.set(key, e); return e;
+  };
+  const drawArt = (page, e, a, box, rotCW, tw, th, Ht) => {
+    const X = box.x * P, Y = (Ht - box.y - box.h) * P;
+    let A = tw * P, B = th * P, t = (360 - rotCW) % 360;
+    if (e.kind === "page") { const pr = a.pageRot || 0; if (pr % 180 === 90) { A = th * P; B = tw * P; } t = ((360 - pr) % 360 + t) % 360; }
+    const o = t === 0 ? [X, Y] : t === 90 ? [X + B, Y] : t === 180 ? [X + A, Y + B] : [X, Y + A];
+    const opts = { x:o[0], y:o[1], width:A, height:B, rotate:degrees(t) };
+    if (e.kind === "page") page.drawPage(e.obj, opts); else page.drawImage(e.obj, opts);
+  };
+  const drawQR = (page, qr, name, Ht) => {
+    const q = qrRuns(name);
+    if (q) {
+      const md = qr.s / q.n, ops = [op("q"), op("k", 0, 0, 0, 1)];
+      for (const [r, c, l] of q.runs) ops.push(op("re", (qr.qx + c * md) * P, (Ht - qr.qy - (r + 1) * md) * P, l * md * P, md * P));
+      ops.push(op("f"), op("Q"));
+      page.pushOperators(...ops);
+    }
+    const sz = Math.min(9, (qr.s * P * 0.98) / font.widthOfTextAtSize(name, 1));
+    const tw = font.widthOfTextAtSize(name, sz);
+    page.drawText(name, { x:(qr.qx + qr.s / 2) * P - tw / 2, y:(Ht - qr.qy - qr.s) * P - sz - 3, size:sz, font, color:black });
+  };
+  const drawMarks = (page, pts, Ht) => {
+    const sz = state.markSize * P;
+    for (const p of pts) {
+      if (state.markShape === "square") page.drawRectangle({ x:p.x * P - sz / 2, y:(Ht - p.y) * P - sz / 2, width:sz, height:sz, color:black });
+      else page.drawCircle({ x:p.x * P, y:(Ht - p.y) * P, size:sz / 2, color:black });
+    }
+  };
+  const drawXY = (page, sh, Ht, back) => {
+    for (const r0 of xyMarks(sh)) { const r = back ? backBox(sh, r0) : r0; page.drawRectangle({ x:r.x * P, y:(Ht - r.y - r.h) * P, width:r.w * P, height:r.h * P, color:black }); }
+  };
+  const total = layout.sheets.length, m = isXY() ? 0 : state.margin, date = new Date().toLocaleDateString();
+  const single = indices.length === 1 && layout.sheets[indices[0]].qr;
+  doc.setTitle(single ? layout.sheets[indices[0]].name + (mode === "back" ? "_BACK" : mode === "cut" ? "_CUT" : "_FRONT") : (state.jobName || "Nested layout"));
+  doc.setCreator("Nesting & production layout");
+  for (const si of indices) {
+    const sh = layout.sheets[si], Ht = sh.mediaH;
+    const page = doc.addPage([sh.mediaW * P, sh.mediaH * P]);
+    const res = page.node.normalizedEntries().Resources;
+    let csd = res.lookup(PDFName.of("ColorSpace")); if (!csd) { csd = ctx.obj({}); res.set(PDFName.of("ColorSpace"), csd); }
+    csd.set(PDFName.of("CutCS"), sepRef);
+    let egs = res.lookup(PDFName.of("ExtGState")); if (!egs) { egs = ctx.obj({}); res.set(PDFName.of("ExtGState"), egs); }
+    egs.set(PDFName.of("GSop"), gsRef);
+    if (ocCut) {
+      let pr = res.lookup(PDFName.of("Properties")); if (!pr) { pr = ctx.obj({}); res.set(PDFName.of("Properties"), pr); }
+      pr.set(PDFName.of("OCCut"), ocCut); pr.set(PDFName.of("OCMark"), ocMark);
+    }
+    const pts = marksOn() ? marksFor(sh) : [];
+
+    if (mode === "front") {
+      for (const it of sh.items) {
+        const j = it.job; let e;
+        try { e = await getEmb(j.id, j, j); } catch (err) { throw new Error(`${j.name}: ${err.message || err}`); }
+        drawArt(page, e, j, artBox(it), it.rot ? 90 : 0, j.w, j.h, Ht);
+        const flaps = bannerFlaps(it);
+        if (flaps.length) {
+          let eb;
+          try { eb = await getEmb(j.id + "-b", j.back, j); } catch (err) { throw new Error(`${j.name} back: ${err.message || err}`); }
+          for (const f of flaps) {
+            page.pushOperators(op("q"), op("re", f.clip.x * P, (Ht - f.clip.y - f.clip.h) * P, f.clip.w * P, f.clip.h * P), op("W"), op("n"));
+            drawArt(page, eb, j.back, f.box, f.rot, j.w, j.h, Ht);
+            page.pushOperators(op("Q"));
+          }
+        }
+      }
+      if (state.cropMarks || (isBanner() && state.bannerCrop)) for (const it of sh.items) for (const [x1, y1, x2, y2] of cropSegs(it))
+        page.drawLine({ start:{ x:x1 * P, y:(Ht - y1) * P }, end:{ x:x2 * P, y:(Ht - y2) * P }, thickness:0.25, color:black });
+      if (isBanner()) for (const it of sh.items) {
+        const bm = bannerMarks(it);
+        for (const [x1, y1, x2, y2] of bm.lines) page.drawLine({ start:{ x:x1 * P, y:(Ht - y1) * P }, end:{ x:x2 * P, y:(Ht - y2) * P }, thickness:0.5, color:black });
+        for (const [x, y] of bm.gromm) {
+          page.drawCircle({ x:x * P, y:(Ht - y) * P, size:0.15 * P, borderColor:black, borderWidth:0.5 });
+          page.drawLine({ start:{ x:(x - 0.2) * P, y:(Ht - y) * P }, end:{ x:(x + 0.2) * P, y:(Ht - y) * P }, thickness:0.35, color:black });
+          page.drawLine({ start:{ x:x * P, y:(Ht - y - 0.2) * P }, end:{ x:x * P, y:(Ht - y + 0.2) * P }, thickness:0.35, color:black });
+        }
+      }
+      if (sh.qr) drawQR(page, sh.qr, sh.name + "_FRONT", Ht);
+      drawMarks(page, pts, Ht);
+      drawXY(page, sh, Ht, false);
+    } else if (mode === "cut") {
+      layerOn(page, "OCCut");
+      for (const it of sh.items) {
+        const j = it.job;
+        if (j.type !== "pdf" || !(j.fileCut && j.fileCut.length)) continue;
+        if (!cache.has(j.id + "-cut")) {
+          let bytes = null;
+          try { bytes = await pdfCutOnly(j); } catch (err) { console.warn(err); }
+          if (!bytes) { cache.set(j.id + "-cut", null); cutFallback.add(j.id); toast(`Couldn't pull the cut line out of ${j.name}; the cut file uses a rectangle for it.`); }
+          else { const [pg] = await doc.embedPdf(bytes, [j.pageIndex]); cache.set(j.id + "-cut", { kind:"page", obj:pg }); }
+        }
+        const e = cache.get(j.id + "-cut");
+        if (e) drawArt(page, e, j, artBox(it), it.rot ? 90 : 0, j.w, j.h, Ht);
+      }
+      layerOff(page);
+      layerOn(page, "OCMark");
+      drawMarks(page, pts, Ht);
+      drawXY(page, sh, Ht, false);
+      layerOff(page);
+    } else {
+      for (const it of sh.items) {
+        const j = it.job;
+        if (!j.ds || !j.back) continue;
+        let e;
+        try { e = await getEmb(j.id + "-b", j.back, j); } catch (err) { throw new Error(`${j.name} back: ${err.message || err}`); }
+        drawArt(page, e, j.back, backBox(sh, artBox(it)), backRot(it), j.w, j.h, Ht);
+      }
+      if (state.backMarks) {
+        if (sh.qr) drawQR(page, backQR(sh), sh.name + "_BACK", Ht);
+        drawMarks(page, pts.map(p => backPt(sh, p)), Ht);
+        drawXY(page, sh, Ht, true);
+      }
+    }
+    if (mode === "cut") layerOn(page, "OCMark");
+    if (state.label && isXY() && sh.xy) {
+      const txt = `${sh.qr ? sh.name : (state.jobName || "Layout")}${mode === "back" ? "_BACK" : mode === "cut" ? "_CUT" : ""}   ${fmt(sh.mediaW, 2)} x ${fmt(sh.mediaH, 2)} in   ${sh.copies ? "QTY " + sh.copies : sh.items.length + " pcs"}   ${date}`;
+      page.drawText(txt, { x:0.1 * P, y:0.12 * P, size:6, font, color:black });
+    }
+    if (state.label && m >= 0.25) {
+      const tag = mode === "cut" ? "CUT ONLY   " : mode === "back" ? `BACK (${state.flip === "h" ? "flip left-right" : "flip top-bottom"})   ` : sh.ds ? "FRONT   " : "";
+      const txt = `${sh.qr ? sh.name : (state.jobName || "Layout")}   ${layout.roll ? "Panel" : "Sheet"} ${si + 1}/${total}   ${matName() ? matName() + "   " : ""}${fmt(sh.mediaW, 2)} x ${fmt(sh.mediaH, 2)} in   ${sh.copies ? "QTY " + sh.copies : sh.items.length + " pcs"}   ${tag}${date}`;
+      const fsz = Math.min(7, m * P * 0.35);
+      const x = mode === "back" && state.flip === "h" ? sh.mediaW * P - m * P - font.widthOfTextAtSize(txt, fsz) : m * P;
+      page.drawText(txt, { x, y:(m / 2) * P - fsz / 2.8, size:fsz, font, color:black });
+    }
+    if (mode === "cut") layerOff(page);
+    if (mode !== "back") {
+      const cuts = sh.items.filter(it => it.job.cut || (mode === "cut" && cutFallback.has(it.job.id)));
+      if (cuts.length) {
+        const ops = [op("q"), op("gs", "/GSop"), op("CS", "/CutCS"), op("SCN", 1), op("w", 0.25)];
+        for (const it0 of cuts) { const it = cutRect(it0); ops.push(op("re", it.x * P, (Ht - it.y - it.h) * P, it.w * P, it.h * P)); }
+        ops.push(op("S"), op("Q"));
+        if (mode === "cut") layerOn(page, "OCCut");
+        page.pushOperators(...ops);
+        if (mode === "cut") layerOff(page);
+      }
+    }
+  }
+  return doc.save();
+}
+
+/* ================= Illustrator (.ai) cut file with "Cut" and "Mark" layers ================= */
+// Illustrator flattens PDF layers on open, but it keeps the layers of a native (legacy text) .ai file.
+function m2(M, N){ return [M[0] * N[0] + M[1] * N[2], M[0] * N[1] + M[1] * N[3], M[2] * N[0] + M[3] * N[2], M[2] * N[1] + M[3] * N[3], M[4] * N[0] + M[5] * N[2] + N[4], M[4] * N[1] + M[5] * N[3] + N[5]]; }
+function cutGeoFromFiltered(text){
+  const toks = text.match(/\/[^\s\/\[\]()<>]+|[+-]?(?:\d+\.?\d*|\.\d+)|[A-Za-z*]+/g) || [];
+  let ctm = [1, 0, 0, 1, 0, 0], args = [], path = [], cur = null, cp = [0, 0];
+  const stack = [], out = [];
+  const T = (x, y) => [ctm[0] * x + ctm[2] * y + ctm[4], ctm[1] * x + ctm[3] * y + ctm[5]];
+  for (const t of toks) {
+    if (/^[+-]?[\d.]/.test(t) || t[0] === "/") { args.push(t); continue; }
+    const a = args.map(Number); args = [];
+    switch (t) {
+      case "q": stack.push(ctm.slice()); break;
+      case "Q": ctm = stack.pop() || [1, 0, 0, 1, 0, 0]; break;
+      case "cm": if (a.length === 6) ctm = m2(a, ctm); break;
+      case "m": cur = { closed:false, segs:[["m", ...T(a[0], a[1])]] }; path.push(cur); cp = [a[0], a[1]]; break;
+      case "l": if (cur) cur.segs.push(["l", ...T(a[0], a[1])]); cp = [a[0], a[1]]; break;
+      case "c": if (cur) cur.segs.push(["c", ...T(a[0], a[1]), ...T(a[2], a[3]), ...T(a[4], a[5])]); cp = [a[4], a[5]]; break;
+      case "v": if (cur) cur.segs.push(["c", ...T(cp[0], cp[1]), ...T(a[0], a[1]), ...T(a[2], a[3])]); cp = [a[2], a[3]]; break;
+      case "y": if (cur) cur.segs.push(["c", ...T(a[0], a[1]), ...T(a[2], a[3]), ...T(a[2], a[3])]); cp = [a[2], a[3]]; break;
+      case "re": { const [x, y, w, hh] = a; path.push({ closed:true, segs:[["m", ...T(x, y)], ["l", ...T(x + w, y)], ["l", ...T(x + w, y + hh)], ["l", ...T(x, y + hh)]] }); cur = null; break; }
+      case "h": if (cur) cur.closed = true; break;
+      case "S": out.push(...path); path = []; cur = null; break;
+      default: break;
+    }
+  }
+  return out;
+}
+async function fileCutGeometry(a){
+  const { PDFName, PDFArray, PDFDict } = PDFLib;
+  const src = await PDFLib.PDFDocument.load(a.pdfBytes, { ignoreEncryption:true, updateMetadata:false });
+  const page = src.getPage(a.pageIndex), res = pageResources(page), cutRes = new Set();
+  const csd = res && res.lookup(PDFName.of("ColorSpace"));
+  if (csd instanceof PDFDict) for (const [k, v] of csd.entries()) {
+    const arr = src.context.lookup(v);
+    if (arr instanceof PDFArray && arr.size() >= 2 && arr.get(0).asString && arr.get(0).asString() === "/Separation" && isCutSpot(pdfNameStr(arr.get(1)))) cutRes.add(k.asString().slice(1));
+  }
+  const contents = page.node.Contents(), parts = [];
+  const streams = contents instanceof PDFArray ? contents.asArray().map(r => src.context.lookup(r)) : [contents];
+  for (const st of streams) { if (!st) continue; const bytes = st.contents && !st.dict.lookup(PDFName.of("Filter")) ? st.contents : PDFLib.decodePDFRawStream(st).decode(); let s = ""; for (let k = 0; k < bytes.length; k++) s += String.fromCharCode(bytes[k]); parts.push(s); }
+  const r = filterCutContent(parts.join("\n"), cutRes);
+  if (!r.found) return null;
+  const mb = page.getMediaBox();
+  return { paths:cutGeoFromFiltered(r.text), mb };
+}
+// same placement maths as drawArt, as a point transform (PDF points, y up)
+function placeTransform(j, box, rotCW, Ht, mb){
+  const P = 72, X = box.x * P, Y = (Ht - box.y - box.h) * P;
+  let A = j.w * P, B = j.h * P, t = (360 - rotCW) % 360;
+  const pr = j.pageRot || 0;
+  if (pr % 180 === 90) { A = j.h * P; B = j.w * P; }
+  t = ((360 - pr) % 360 + t) % 360;
+  const o = t === 0 ? [X, Y] : t === 90 ? [X + B, Y] : t === 180 ? [X + A, Y + B] : [X, Y + A];
+  const sx = A / mb.width, sy = B / mb.height, c = Math.round(Math.cos(t * Math.PI / 180)), s = Math.round(Math.sin(t * Math.PI / 180));
+  return (px, py) => { const u = (px - mb.x) * sx, v = (py - mb.y) * sy; return [o[0] + u * c - v * s, o[1] + u * s + v * c]; };
+}
+async function buildAiCut(si, geoCache){
+  const sh = layout.sheets[si], P = 72, Ht = sh.mediaH, W = sh.mediaW * P, H = sh.mediaH * P;
+  const n = v => String(+v.toFixed(3)), spot = ((state.spotName || "").trim() || "CutContour").replace(/[()\\]/g, "");
+  const cut = [], rectPath = (x, y, w, hh) => ({ closed:true, segs:[["m", x, y], ["l", x + w, y], ["l", x + w, y + hh], ["l", x, y + hh]] });
+  for (const it of sh.items) {
+    const j = it.job;
+    let done = false;
+    if (j.type === "pdf" && j.fileCut && j.fileCut.length) {
+      if (!geoCache.has(j.id)) { let g = null; try { g = await fileCutGeometry(j); } catch (e) { console.warn(e); } geoCache.set(j.id, g); }
+      const g = geoCache.get(j.id);
+      if (g) {
+        const T = placeTransform(j, artBox(it), it.rot ? 90 : 0, Ht, g.mb);
+        for (const p of g.paths) cut.push({ closed:p.closed, segs:p.segs.map(s => { const o = [s[0]]; for (let k = 1; k < s.length; k += 2) o.push(...T(s[k], s[k + 1])); return o; }) });
+        done = true;
+      }
+    }
+    if (!done && (j.cut || (j.fileCut && j.fileCut.length))) { const r = cutRect(it); cut.push(rectPath(r.x * P, (Ht - r.y - r.h) * P, r.w * P, r.h * P)); }
+  }
+  const L = [
+    "%!PS-Adobe-3.0", "%%Creator: Adobe Illustrator(R) 8.0", "%%AI8_CreatorVersion: 8.0", "%%For: (BatchLab) ()", `%%Title: (${sh.name}_CUT.ai)`,
+    `%%BoundingBox: 0 0 ${Math.ceil(W)} ${Math.ceil(H)}`, `%%HiResBoundingBox: 0 0 ${n(W)} ${n(H)}`,
+    "%%DocumentProcessColors: Black", `%%DocumentCustomColors: (${spot})`, `%%CMYKCustomColor: 0 1 0 0 (${spot})`,
+    "%AI5_FileFormat 4.0", "%AI3_ColorUsage: Color", `%AI5_ArtSize: ${n(W)} ${n(H)}`, "%AI5_RulerUnits: 0",
+    "%AI5_ArtFlags: 0 0 0 1 0 0 1 0 0", "%AI5_TargetResolution: 800", "%AI5_NumLayers: 2", "%AI5_OpenViewLayers: 7",
+    "%%EndComments", "%%BeginProlog", "%%EndProlog", "%%BeginSetup", "%%EndSetup",
+    // Illustrator lists the last layer on top, so Mark is written first and Cut last
+    "%AI5_BeginLayer", "1 1 1 1 0 0 1 79 128 255 0 50 Lb", "(Mark) Ln", "0 A", "0 O", "0 0 0 1 k", "0 R", "0 0 0 0 K", "0 J 0 j 1 w 4 M []0 d", "0 D", "0 XR", "800 Ar"
+  ];
+  // closed paths repeat their first point at the end, the way Illustrator writes them
+  const pathOut = (segs, closed, paint) => {
+    for (const s of segs) L.push(s[0] === "m" ? `${n(s[1])} ${n(s[2])} m` : s[0] === "l" ? `${n(s[1])} ${n(s[2])} L` : `${s.slice(1).map(n).join(" ")} C`);
+    if (closed && segs.length) {
+      const a = segs[0], z = segs[segs.length - 1], zx = z[z.length - 2], zy = z[z.length - 1];
+      if (Math.abs(zx - a[1]) > 1e-3 || Math.abs(zy - a[2]) > 1e-3) L.push(`${n(a[1])} ${n(a[2])} L`);
+    }
+    L.push(paint);
+  };
+  const k = 0.5522847;
+  if (marksOn()) for (const pt of marksFor(sh)) {
+    const x = pt.x * P, y = (Ht - pt.y) * P, r = state.markSize / 2 * P;
+    if (state.markShape === "square") pathOut([["m", x - r, y - r], ["l", x + r, y - r], ["l", x + r, y + r], ["l", x - r, y + r]], true, "f");
+    else { const q = k * r; L.push(`${n(x + r)} ${n(y)} m`, `${n(x + r)} ${n(y + q)} ${n(x + q)} ${n(y + r)} ${n(x)} ${n(y + r)} C`, `${n(x - q)} ${n(y + r)} ${n(x - r)} ${n(y + q)} ${n(x - r)} ${n(y)} C`, `${n(x - r)} ${n(y - q)} ${n(x - q)} ${n(y - r)} ${n(x)} ${n(y - r)} C`, `${n(x + q)} ${n(y - r)} ${n(x + r)} ${n(y - q)} ${n(x + r)} ${n(y)} C`, "f"); }
+  }
+  for (const r of xyMarks(sh)) { const x = r.x * P, y = (Ht - r.y - r.h) * P, w = r.w * P, hh = r.h * P; pathOut([["m", x, y], ["l", x + w, y], ["l", x + w, y + hh], ["l", x, y + hh]], true, "f"); }
+  L.push("LB", "%AI5_EndLayer--",
+    "%AI5_BeginLayer", "1 1 1 1 0 0 0 255 79 79 0 50 Lb", "(Cut) Ln", "0 A", "0 O", "0 0 0 0 k", "1 R", `0 1 0 0 (${spot}) 0 X`, "0 J 0 j 0.25 w 4 M []0 d", "0 D", "0 XR", "800 Ar");
+  for (const p of cut) pathOut(p.segs, p.closed, p.closed ? "s" : "S");
+  L.push("LB", "%AI5_EndLayer--", "%%PageTrailer", "gsave annotatepage grestore showpage", "%%Trailer", "%%EOF");
+  return new TextEncoder().encode(L.join("\r\n") + "\r\n");
+}
+
+async function exportPdf(cutOnly){
+  if (!layout || !layout.sheets.length) { toast("Add jobs first. Nothing is laid out yet."); return; }
+  if (!window.PDFLib) { toast("The PDF writer didn't load. Check your connection and reload."); return; }
+  const missing = jobs.filter(j => j.ds && !j.back);
+  if (!cutOnly && missing.length) toast(`Heads up: ${missing.map(j => j.name).join(", ")} has no back file, so its back prints blank.`);
+  const btn = cutOnly ? $("#btnCut") : $("#btnPdf"); const label = btn.textContent;
+  btn.disabled = true; btn.textContent = "Building…";
+  try {
+    const all = layout.sheets.map((_, i) => i), files = [];
+    const perPage = true; // always one PDF per sheet, zipped when there's more than one
+    const aiGeo = new Map();
+    if (perPage) {
+      for (const i of all) {
+        const sh = layout.sheets[i];
+        btn.textContent = `Building ${i + 1} of ${all.length}…`;
+        files.push([`${sh.name}${cutOnly ? "_CUT" : "_FRONT"}.pdf`, await buildPdf([i], cutOnly ? "cut" : "front")]);
+        if (cutOnly) files.push([`${sh.name}_CUT.ai`, await buildAiCut(i, aiGeo)]);
+        if (!cutOnly && sh.ds) files.push([`${sh.name}_BACK.pdf`, await buildPdf([i], "back")]);
+      }
+    } else {
+      files.push([`${slug()}-${cutOnly ? "cut" : "print-cut"}.pdf`, await buildPdf(all, cutOnly ? "cut" : "front")]);
+      const dsIdx = all.filter(i => layout.sheets[i].ds);
+      if (!cutOnly && dsIdx.length) files.push([`${slug()}-back.pdf`, await buildPdf(dsIdx, "back")]);
+    }
+    if (files.length === 1) await saveFile(files[0][0], new Blob([files[0][1]], { type:"application/pdf" }));
+    else {
+      if (!window.JSZip) throw new Error("the ZIP packer didn't load; check your connection and reload");
+      const zip = new JSZip();
+      for (const [n, b] of files) zip.file(n, b);
+      const blob = await zip.generateAsync({ type:"blob" });
+      const s = nameSlug();
+      await saveFile(perPage ? `${zipName()}${cutOnly ? "_CUT" : ""}.zip` : `${slug()}${cutOnly ? "-cut" : ""}.zip`, blob);
+    }
+    try { btn.textContent = "Saving to history…"; await recordHistory(cutOnly ? files : null, aiGeo); } catch (e) { console.warn("history not saved", e); }
+  } catch (err) {
+    console.error(err);
+    toast(`Export failed: ${err.message || err}`);
+  } finally { btn.disabled = false; btn.textContent = label; }
+}
+
+/* ================= batch history (cut files + sheet screenshots, kept in this browser) ================= */
+function histDb(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open("batchlab-history", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("batches", { keyPath:"id" });
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function histTx(mode, fn){
+  const db = await histDb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction("batches", mode), st = tx.objectStore("batches");
+    let out; const r = fn(st); if (r) r.onsuccess = () => { out = r.result; };
+    tx.oncomplete = () => res(out); tx.onerror = () => rej(tx.error);
+  });
+}
+const histAll = async () => ((await histTx("readonly", st => st.getAll())) || []).sort((a, b) => b.t - a.t);
+const histPut = e => histTx("readwrite", st => st.put(e));
+const histDel = id => histTx("readwrite", st => st.delete(id));
+const imgCache = new Map();
+function imgFor(src){ if (!imgCache.has(src)) imgCache.set(src, loadImg(src).catch(() => null)); return imgCache.get(src); }
+async function sheetShot(sh){
+  const s = Math.min(14, 1200 / sh.mediaW, 900 / sh.mediaH), cw = Math.round(sh.mediaW * s), ch = Math.round(sh.mediaH * s);
+  const c = document.createElement("canvas"); c.width = cw; c.height = ch;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, cw, ch);
+  for (const it of sh.items) {
+    const j = it.job, img = await imgFor(j.thumb), b = artBox(it);
+    if (img) { g.save(); g.translate((b.x + b.w / 2) * s, (b.y + b.h / 2) * s); g.rotate((it.rot ? 90 : 0) * Math.PI / 180); g.drawImage(img, -j.w * s / 2, -j.h * s / 2, j.w * s, j.h * s); g.restore(); }
+    const t = cutRect(it); g.strokeStyle = "#E4007C"; g.lineWidth = 1.5; g.strokeRect(t.x * s, t.y * s, t.w * s, t.h * s);
+  }
+  g.fillStyle = "#000";
+  for (const p of (marksOn() ? marksFor(sh) : [])) { g.beginPath(); g.arc(p.x * s, p.y * s, Math.max(2.5, state.markSize / 2 * s), 0, Math.PI * 2); g.fill(); }
+  for (const r of xyMarks(sh)) g.fillRect(r.x * s, r.y * s, Math.max(1, r.w * s), Math.max(1, r.h * s));
+  if (sh.qr) g.fillRect(sh.qr.qx * s, sh.qr.qy * s, sh.qr.s * s, sh.qr.s * s);
+  g.strokeStyle = "#888"; g.lineWidth = 1; g.strokeRect(0.5, 0.5, cw - 1, ch - 1);
+  return c.toDataURL("image/jpeg", 0.82);
+}
+async function recordHistory(cutFiles, aiGeo){
+  if (!window.indexedDB || !layout || !layout.sheets.length) return;
+  let files = cutFiles;
+  if (!files) {
+    files = [];
+    for (let i = 0; i < layout.sheets.length; i++) {
+      const sh = layout.sheets[i];
+      files.push([`${sh.name}_CUT.pdf`, await buildPdf([i], "cut")]);
+      files.push([`${sh.name}_CUT.ai`, await buildAiCut(i, aiGeo || new Map())]);
+    }
+  }
+  const shots = [];
+  for (const sh of layout.sheets) shots.push(await sheetShot(sh));
+  const sig = layout.sheets.map(s => s.sig).join("~");
+  const prev = (await histAll())[0];
+  // exporting print and cut files for the same layout updates one entry instead of adding two
+  const id = prev && prev.sig === sig && Date.now() - prev.t < 12 * 3600e3 ? prev.id : String(Date.now());
+  await histPut({
+    id, t:Date.now(), title:zipName(), material:matName(), orderNo:state.orderNo || "", mode:state.mode,
+    sheets:layout.sheets.length, pieces:layout.sheets.reduce((s, sh) => s + sh.items.length * (sh.copies || 1), 0),
+    media:`${fmt(layout.sheets[0].mediaW, 2)} × ${fmt(layout.sheets[0].mediaH, 2)} in`,
+    jobs:jobs.filter(j => j.qty > 0).map(j => [j.name, j.qty]), sig,
+    files:files.map(([n, b]) => ({ name:n, blob:new Blob([b]) })), shots
+  });
+}
+async function openHistory(){
+  let list;
+  try { list = await histAll(); } catch (e) { toast("History isn't available in this browser."); return; }
+  const ov = document.createElement("div"); ov.className = "hist-ov";
+  ov.innerHTML = `<div class="hist" role="dialog" aria-label="Batch history"><div class="hist-head"><b>Batch history</b>
+    <input type="search" class="hist-q" placeholder="Search order #, board, file name…"><span class="hist-use"></span>
+    <button class="btn small" data-act="close">Close</button></div><div class="hist-list"></div></div>`;
+  document.body.appendChild(ov);
+  const listEl = ov.querySelector(".hist-list"), q = ov.querySelector(".hist-q");
+  const close = () => { ov.remove(); document.removeEventListener("keydown", onKey); };
+  const onKey = e => { if (e.key === "Escape") close(); };
+  document.addEventListener("keydown", onKey);
+  ov.addEventListener("click", e => { if (e.target === ov) close(); });
+  const when = t => new Date(t).toLocaleString([], { month:"short", day:"numeric", year:"numeric", hour:"numeric", minute:"2-digit" });
+  const usage = async () => { try { const e = await navigator.storage.estimate(); ov.querySelector(".hist-use").textContent = `${list.length} batches, ${(e.usage / 1048576).toFixed(1)} MB used`; } catch (e) { ov.querySelector(".hist-use").textContent = `${list.length} batches`; } };
+  const render = () => {
+    const s = q.value.trim().toLowerCase();
+    const rows = list.filter(h => !s || [h.title, h.material, h.orderNo, ...h.jobs.map(j => j[0]), ...h.files.map(f => f.name)].join(" ").toLowerCase().includes(s));
+    listEl.innerHTML = rows.length ? rows.map(h => `<div class="hrow" data-id="${h.id}">
+      <img src="${h.shots[0] || ""}" alt="Sheet 1 of ${esc(h.title)}" data-act="view">
+      <div class="hmeta"><b>${esc(h.title)}</b>${when(h.t)}<br>${esc([h.material, h.orderNo ? "Order " + h.orderNo : ""].filter(Boolean).join(", ") || h.mode)}<br>
+        ${h.sheets} ${h.mode === "sheet" ? "sheet" : "panel"}${h.sheets > 1 ? "s" : ""}, ${h.pieces} pieces, ${esc(h.media)}<br>${h.jobs.length} file${h.jobs.length > 1 ? "s" : ""}: ${esc(h.jobs.slice(0, 3).map(j => j[0] + (j[1] > 1 ? " ×" + j[1] : "")).join(", "))}${h.jobs.length > 3 ? ", …" : ""}</div>
+      <div class="hbtns"><button class="btn small" data-act="dl">Download cut files</button><button class="btn small" data-act="view">View sheets</button><button class="btn small" data-act="del">Delete</button></div></div>`).join("")
+      : `<div class="hist-empty">${list.length ? "No batches match." : "No batches yet. Every export is saved here with its cut files and a picture of each sheet."}</div>`;
+  };
+  q.addEventListener("input", render);
+  listEl.addEventListener("click", async e => {
+    const b = e.target.closest("[data-act]"), row = e.target.closest(".hrow"); if (!b || !row) return;
+    const h = list.find(x => x.id === row.dataset.id); if (!h) return;
+    if (b.dataset.act === "dl") {
+      if (h.files.length === 1) { await saveFile(h.files[0].name, h.files[0].blob); return; }
+      const zip = new JSZip(); for (const f of h.files) zip.file(f.name, f.blob);
+      await saveFile(`${h.title}_CUT.zip`, await zip.generateAsync({ type:"blob" }));
+    }
+    if (b.dataset.act === "view") {
+      listEl.innerHTML = `<p><button class="btn small" data-back>← Back to history</button></p><div class="hgal">${h.shots.map((src, i) => `<figure><img src="${src}" alt="Sheet ${i + 1}"><figcaption>${esc(h.title)}, sheet ${i + 1} of ${h.shots.length}</figcaption></figure>`).join("")}</div>`;
+      listEl.querySelector("[data-back]").onclick = render;
+    }
+    if (b.dataset.act === "del") {
+      if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Click again to delete"; setTimeout(() => { if (b.isConnected) { b.dataset.armed = ""; b.textContent = "Delete"; } }, 3000); return; }
+      await histDel(h.id); list = list.filter(x => x.id !== h.id); render(); usage();
+    }
+  });
+  ov.querySelector("[data-act=close]").onclick = close;
+  render(); usage(); q.focus();
+}
+
+function exportCsv(){
+  if (!layout || !layout.sheets.length) { toast("Add jobs first. Nothing is laid out yet."); return; }
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const rows = [["Unit", "File name", "Material", "Media (in)", "Job", "Width (in)", "Height (in)", "Pieces", "Rotated", "Cut line", "Double-sided", "Back file"]];
+  layout.sheets.forEach((sh, i) => {
+    const by = new Map();
+    for (const it of sh.items) { const r = by.get(it.job) || { n:0, rot:0 }; r.n++; if (it.rot) r.rot++; by.set(it.job, r); }
+    for (const [j, r] of by) rows.push([`${layout.roll ? "Panel" : "Sheet"} ${i + 1}`, sh.name + "_FRONT", matName(), `${fmt(sh.mediaW, 2)} x ${fmt(sh.mediaH, 2)}`, j.name, fmt(j.w), fmt(j.h), r.n, r.rot, j.cut ? "yes" : "no", j.ds ? "yes" : "no", j.back ? j.back.name : ""]);
+  });
+  for (const j of layout.over) rows.push(["Not placed", "", "", "", j.name, fmt(j.w), fmt(j.h), "", "", "too large", "", ""]);
+  saveFile(`${slug()}-layout.csv`, new Blob([rows.map(r => r.map(q).join(",")).join("\n")], { type:"text/csv" }));
+}
+
+/* ================= settings wiring ================= */
+function syncSettingsUI(){
+  $("#modeSheet").setAttribute("aria-pressed", state.mode === "sheet");
+  $("#modeRoll").setAttribute("aria-pressed", state.mode === "roll");
+  $("#modeBanner").setAttribute("aria-pressed", isBanner());
+  $("#bannerMatWrap").hidden = $("#bannerPresetWrap").hidden = $("#bannerFields").hidden = $("#bannerSec").hidden = !isBanner();
+  $("#bannerMat").value = state.bannerMat;
+  $("#bannerRollW").value = fmt(state.bannerRollW);
+  const bsel = $("#bannerPreset"); bsel.value = state.bannerImpose ? "impose" : [...bsel.options].some(o => o.value === String(state.bannerRollW)) ? String(state.bannerRollW) : "custom";
+  $("#bannerFields").hidden = !isBanner() || state.bannerImpose;
+  $("#bannerHemOn").checked = !!state.bannerHemOn;
+  for (const k of ["bannerPocket", "bannerGromEvery", "bannerGromInset"]) $("#" + k).value = fmt(state[k]);
+  $("#bannerPockets").value = state.bannerPockets; $("#bannerGrom").value = state.bannerGrom;
+  $("#gromEveryWrap").hidden = state.bannerGrom !== "custom";
+  $("#bannerPocket").disabled = state.bannerPockets === "none";
+  $("#gromSidesRow").hidden = state.bannerGrom === "none";
+  $("#bannerGromSides").value = state.bannerGromSides;
+  $("#gromCustom").hidden = state.bannerGromSides !== "custom";
+  for (const k of ["gromT", "gromB", "gromL", "gromR"]) $("#" + k).checked = !!state[k];
+  $("#qrSec").hidden = isBanner();
+  $("#bannerFold").checked = !!state.bannerFold; $("#bannerCrop").checked = !!state.bannerCrop;
+  $("#sheetFields").hidden = $("#sheetPresetWrap").hidden = state.mode !== "sheet";
+  $("#materialWrap").hidden = state.mode !== "sheet";
+  $("#thickWrap").hidden = state.mode !== "sheet";
+  syncThickness();
+  $("#material").value = state.material || "";
+  $("#materialOther").value = state.materialOther || "";
+  $("#materialOtherRow").hidden = state.mode !== "sheet" || state.material !== "other";
+  $("#rollFields").hidden = $("#rollPresetWrap").hidden = state.mode !== "roll";
+  $("#sheetW").value = fmt(state.sheetW); $("#sheetH").value = fmt(state.sheetH);
+  const sp = `${state.sheetW}x${state.sheetH}`, spr = `${state.sheetH}x${state.sheetW}`;
+  const sel = $("#sheetPreset"); const opt = [...sel.options].find(o => o.value === sp || o.value === spr);
+  sel.value = opt ? opt.value : "custom";
+  $("#rollW").value = fmt(state.rollW); $("#rollMax").value = fmt(state.rollMax);
+  const rsel = $("#rollPreset"); rsel.value = [...rsel.options].some(o => o.value === String(state.rollW)) ? String(state.rollW) : "custom";
+  for (const k of ["bleed", "margin", "gap", "imgPpi", "markSize", "markQty", "markDist", "qrSize", "markEdge", "markSpacing", "dirSpacing", "backNudgeX", "backNudgeY"]) $("#" + k).value = fmt(state[k]);
+  $("#orderNo").value = state.orderNo || "";
+  for (const k of ["rotate", "qr", "cropMarks", "label", "balance", "dsSeparate", "backMarks", "consistent", "renameFileCut"]) $("#" + k).checked = !!state[k];
+  for (const k of ["cutter", "markShape", "dirCorner", "qrCorner", "markMode", "flip"]) $("#" + k).value = state[k];
+  $("#spotName").value = state.spotName; $("#spotEcho").textContent = state.spotName || "CutContour";
+  $("#markFields").hidden = !marksOn(); $("#qrFields").hidden = !state.qr;
+  $("#dotDefaults").hidden = !marksOn();
+  $("#xyFields").hidden = !isXY();
+  for (const k of ["xyMarkW", "xyTabW", "xyTabL", "xyMarkOff", "xyEdge", "xyLead"]) $("#" + k).value = fmt(state[k]);
+  $("#freeFields").hidden = $("#freeDefaults").hidden = state.markMode === "frame";
+  $("#namePreview").textContent = fileName(0) + "_FRONT.pdf";
+  renderSums();
+}
+const MATERIALS = { foam:"Foam board", coroplast:"Coroplast", pvc:"PVC", dibond:"Dibond", pulpboard:"Pulpboard", gatorboard:"Gatorboard", acrylic:"Acrylic", eflute:"E-flute" };
+const THICKNESSES = {
+  foam:['3/16"', '1/2"'], pvc:['1/8"', '1/4"', '1/2"', '1"'], coroplast:['4mm', '6mm'], dibond:['1/8"'], pulpboard:['60pt'],
+  gatorboard:['3/16"', '1/2"', '1"'], eflute:['1.5mm'], acrylic:['1/8"', '1/4"', '1/2"', '1"'],
+  other:['1/8"', '3/16"', '1/4"', '1/2"', '1"', '4mm', '6mm'], "":['1/8"', '3/16"', '1/4"', '1/2"', '1"', '4mm', '6mm']
+};
+function syncThickness(){
+  const list = THICKNESSES[state.material] || THICKNESSES[""], sel = $("#thickness");
+  if (state.thickness && !list.includes(state.thickness)) state.thickness = "";
+  if (!state.thickness && list.length === 1 && state.material) state.thickness = list[0];
+  sel.innerHTML = `<option value="">Thickness</option>` + list.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  sel.value = state.thickness || "";
+}
+function matName(){
+  if (isBanner()) return BANNER_MATS[state.bannerMat] || "";
+  if (state.mode !== "sheet") return "";
+  const m = state.material === "other" ? (state.materialOther || "").trim() : (MATERIALS[state.material] || "");
+  return [state.thickness || "", m].filter(Boolean).join(" ");
+}
+function renderSums(){
+  const pk = { none:"", top:"pocket top", bottom:"pocket bottom", tb:"pockets top & bottom", left:"pocket left", right:"pocket right", lr:"pockets left & right" }[state.bannerPockets];
+  $("#sumBanner").textContent = [state.bannerHemOn ? 'hem 1"' : "no hem", pk, state.bannerGrom === "none" ? "no grommets" : state.bannerGrom === "corners" ? "grommets at corners" : `grommets every ${fmt(state.bannerGrom === "custom" ? state.bannerGromEvery : +state.bannerGrom)}"`].filter(Boolean).join(", ");
+  $("#defSum").textContent = marksOn() ? `${state.markShape === "square" ? "Square" : "Dot"} ${fmt(state.markSize)}, ${fmt(state.markDist)} from art, ${state.dirCorner.toUpperCase()} ${fmt(state.dirSpacing)} apart` : "";
+  const cut = { colex:"Colex", summa:"Summa", ruk:"RUK", other:"Other", none:"No marks", saga:"SAGA XY" }[state.cutter];
+  $("#sumMedia").textContent = (matName() ? matName() + ", " : "") + (state.mode === "sheet" ? `${fmt(state.sheetW)} × ${fmt(state.sheetH)}` : `${fmt(rollWidth())} in ${isBanner() ? "banner " : ""}roll`) + `, margin ${fmt(state.margin)}, gap ${fmt(state.gap)}`;
+  const bl = state.bleed > EPS ? `, bleed ${fmt(state.bleed)}` : "";
+  $("#sumCutter").textContent = (isXY() ? `SAGA XY, ${fmt(state.xyMarkW)} in lines` : marksOn() ? `${cut}, ${fmt(state.markQty)} ${state.markShape === "square" ? "squares" : "dots"}, ${{ auto:"auto", frame:"around art", free:"empty spaces" }[state.markMode]}` : cut) + bl;
+  $("#sumQR").textContent = state.qr ? `${fmt(state.qrSize)} in, ${state.qrCorner.toUpperCase()}` : "Off";
+  $("#sumDS").textContent = `Flip ${state.flip === "v" ? "vertical" : "horizontal"}${state.dsSeparate ? ", own sheets" : ""}`;
+  $("#sumOut").textContent = [state.jobName, state.orderNo].filter(Boolean).join(", ") || "No order #";
+}
+function changed(){ saveProfile(); saveSettings(); renderSums(); schedule(); }
+$("#resetCutter").onclick = () => {
+  const p = CUTTERS[state.cutter];
+  if (!p) { toast("This cutter has no built-in defaults."); return; }
+  Object.assign(state, p); syncSettingsUI(); changed();
+  toast(`${$("#cutter").selectedOptions[0].textContent} defaults restored.`);
+};
+$("#modeSheet").onclick = () => { state.mode = "sheet"; if (isXY()) { state.cutter = "colex"; Object.assign(state, CUTTERS.colex); toast("SAGA XY marks are for rolls, so the cutter switched to Colex."); } syncSettingsUI(); changed(); };
+$("#modeRoll").onclick = () => { state.mode = "roll"; syncSettingsUI(); changed(); };
+$("#modeBanner").onclick = () => { state.mode = "banner"; unlocked = false; selMark = null; syncSettingsUI(); changed(); };
+$("#bannerMat").onchange = e => { state.bannerMat = e.target.value; syncSettingsUI(); changed(); };
+$("#bannerPreset").onchange = e => {
+  const v = e.target.value;
+  state.bannerImpose = v === "impose";
+  if (v !== "impose" && v !== "custom") state.bannerRollW = +v;
+  syncSettingsUI(); changed();
+  if (v === "custom") $("#bannerRollW").focus();
+};
+for (const k of ["bannerPockets", "bannerGrom", "bannerGromSides"]) $("#" + k).onchange = e => { state[k] = e.target.value; syncSettingsUI(); changed(); };
+for (const k of ["bannerFold", "bannerCrop", "gromT", "gromB", "gromL", "gromR", "bannerHemOn"]) $("#" + k).addEventListener("change", e => { state[k] = e.target.checked; changed(); });
+$("#sheetPreset").onchange = e => { if (e.target.value === "custom") { $("#sheetW").focus(); return; } const [w, h] = e.target.value.split("x").map(Number); state.sheetW = w; state.sheetH = h; syncSettingsUI(); changed(); };
+$("#swap").onclick = () => { [state.sheetW, state.sheetH] = [state.sheetH, state.sheetW]; syncSettingsUI(); changed(); };
+$("#rollPreset").onchange = e => { if (e.target.value === "custom") { $("#rollW").focus(); return; } state.rollW = +e.target.value; syncSettingsUI(); changed(); };
+const numField = (id, key, min, after) => $("#" + id).addEventListener("input", e => { const v = num(e.target.value, NaN); if (isFinite(v) && v >= min) { state[key] = v; if (after) after(); changed(); } });
+numField("sheetW", "sheetW", 1, () => { $("#sheetPreset").value = "custom"; });
+numField("sheetH", "sheetH", 1, () => { $("#sheetPreset").value = "custom"; });
+numField("rollW", "rollW", 1, () => { const r = $("#rollPreset"); r.value = [...r.options].some(o => o.value === String(state.rollW)) ? String(state.rollW) : "custom"; });
+numField("rollMax", "rollMax", 0);
+numField("bannerRollW", "bannerRollW", 1, () => { const r = $("#bannerPreset"); r.value = [...r.options].some(o => o.value === String(state.bannerRollW)) ? String(state.bannerRollW) : "custom"; });
+numField("bannerPocket", "bannerPocket", 0);
+numField("bannerGromEvery", "bannerGromEvery", 2);
+numField("bannerGromInset", "bannerGromInset", 0);
+numField("margin", "margin", 0);
+numField("gap", "gap", 0);
+numField("imgPpi", "imgPpi", 1);
+numField("markSize", "markSize", 0.05);
+numField("markQty", "markQty", 3);
+numField("markDist", "markDist", 0);
+numField("markEdge", "markEdge", 0);
+numField("markSpacing", "markSpacing", 0.5);
+numField("dirSpacing", "dirSpacing", 0.25);
+numField("qrSize", "qrSize", 0.5);
+numField("bleed", "bleed", 0, () => renderJobs());
+$("#material").onchange = e => { state.material = e.target.value; syncSettingsUI(); saveSettings(); renderSums(); schedule(); if (state.material === "other") $("#materialOther").focus(); };
+$("#materialOther").addEventListener("input", e => { state.materialOther = e.target.value; $("#namePreview").textContent = fileName(0) + "_FRONT.pdf"; saveSettings(); renderSums(); schedule(); });
+$("#thickness").onchange = e => { state.thickness = e.target.value; $("#namePreview").textContent = fileName(0) + "_FRONT.pdf"; saveSettings(); renderSums(); schedule(); };
+numField("xyMarkW", "xyMarkW", 0.01);
+numField("xyTabW", "xyTabW", 0.05);
+numField("xyTabL", "xyTabL", 0.05);
+numField("xyMarkOff", "xyMarkOff", 0);
+numField("xyEdge", "xyEdge", 0);
+numField("xyLead", "xyLead", 0);
+numField("backNudgeX", "backNudgeX", -10);
+numField("backNudgeY", "backNudgeY", -10);
+$("#orderNo").addEventListener("input", e => { state.orderNo = e.target.value; $("#namePreview").textContent = fileName(0) + "_FRONT.pdf"; saveSettings(); renderSums(); schedule(); });
+for (const k of ["rotate", "cropMarks", "label", "balance", "dsSeparate", "backMarks", "consistent", "renameFileCut"]) $("#" + k).addEventListener("change", e => { state[k] = e.target.checked; if (k === "rotate") renderJobs(); changed(); });
+$("#qr").addEventListener("change", e => { state.qr = e.target.checked; syncSettingsUI(); changed(); });
+$("#cutter").onchange = e => { saveProfile(); state.cutter = e.target.value; if (CUTTERS[state.cutter]) Object.assign(state, CUTTERS[state.cutter]); if (state.profiles && state.profiles[state.cutter]) Object.assign(state, state.profiles[state.cutter]); if (isXY() && state.mode !== "roll") { state.mode = "roll"; toast("Switched to Roll for the SAGA XY trimmer."); } if (!marksOn()) { unlocked = false; selMark = null; } syncSettingsUI(); changed(); };
+$("#spotName").addEventListener("input", e => { state.spotName = e.target.value; $("#spotEcho").textContent = e.target.value.trim() || "CutContour"; saveProfile(); saveSettings(); renderSums(); });
+for (const k of ["markShape", "dirCorner", "qrCorner", "markMode", "flip"]) $("#" + k).onchange = e => { state[k] = e.target.value; syncSettingsUI(); changed(); };
+
+
+// collapsible sections remember their state
+let openSecs = {};
+try { openSecs = JSON.parse(localStorage.getItem("nest-tool-open") || "{}"); } catch (e) {}
+document.querySelectorAll("details.sec[data-k]").forEach(d => {
+  if (openSecs[d.dataset.k] !== undefined) d.open = openSecs[d.dataset.k];
+  d.addEventListener("toggle", () => { openSecs[d.dataset.k] = d.open; try { localStorage.setItem("nest-tool-open", JSON.stringify(openSecs)); } catch (e) {} });
+});
+// (i) tooltips
+const tipEl = $("#tip");
+function showTip(el){
+  tipEl.textContent = el.dataset.tip; tipEl.hidden = false;
+  const r = el.getBoundingClientRect(), tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+  let x = Math.min(Math.max(8, r.left + r.width / 2 - tw / 2), window.innerWidth - tw - 8);
+  let y = r.bottom + 6; if (y + th > window.innerHeight - 8) y = r.top - th - 6;
+  tipEl.style.left = x + "px"; tipEl.style.top = y + "px";
+}
+document.addEventListener("mouseover", e => { const t = e.target.closest("[data-tip]"); if (t) showTip(t); });
+document.addEventListener("mouseout", e => { if (e.target.closest("[data-tip]")) tipEl.hidden = true; });
+document.addEventListener("focusin", e => { const t = e.target.closest("[data-tip]"); if (t) showTip(t); });
+document.addEventListener("focusout", e => { if (e.target.closest("[data-tip]")) tipEl.hidden = true; });
+document.addEventListener("click", e => { if (e.target.closest(".info")) { e.preventDefault(); e.stopPropagation(); } }, true);
+document.querySelector(".side").addEventListener("scroll", () => { tipEl.hidden = true; });
+
+$("#btnAdd").onclick = () => $("#fileIn").click();
+$("#dropzone").onclick = () => $("#fileIn").click();
+$("#fileIn").onchange = e => { handleFiles(e.target.files); e.target.value = ""; };
+$("#backIn").onchange = e => { const f = e.target.files[0]; e.target.value = ""; handleBackFile(f); };
+$("#btnClear").onclick = () => { if (!jobs.length) return; jobs = []; $("#defs").innerHTML = ""; overrides.clear(); selMark = null; renderJobs(); schedule(); };
+$("#btnPdf").onclick = () => exportPdf(false);
+$("#btnCut").onclick = () => exportPdf(true);
+$("#btnCsv").onclick = exportCsv;
+const APP_VERSION = "2026.10.17f";
+$("#btnHist").onclick = openHistory;
+// quantity from the file name: "...-X4-Front.pdf" means 4 copies (last -X<number> wins)
+function qtyFromName(name){
+  const m = [...String(name).replace(/\.[^.]+$/, "").matchAll(/(?:^|[-_ ])X(\d{1,4})(?=[-_ ]|$)/gi)];
+  if (!m.length) return 0;
+  const n = parseInt(m[m.length - 1][1], 10);
+  return n > 0 ? n : 0;
+}
+$("#appVer").textContent = "v" + APP_VERSION;
+($("#btnDiag") || {}).onclick = async () => {
+  const skip = new Set(["profiles"]);
+  const st = {}; for (const k of Object.keys(state)) if (!skip.has(k)) st[k] = state[k];
+  const info = {
+    v: APP_VERSION, state: st,
+    jobs: jobs.map(j => [j.name.slice(-24), +j.w.toFixed(4), +j.h.toFixed(4), j.qty, j.rotate ? 1 : 0, j.cut ? 1 : 0, j.ds ? 1 : 0, j.type, j.pageRot || 0]),
+    layout: layout ? { mode:layout.mode, strips:!!layout.strips, sheets:layout.sheets.map(s => ({ p:s.pattern || 0, n:s.items.length, qr:s.qr ? [+s.qr.x.toFixed(2), +s.qr.y.toFixed(2)] : 0,
+      it:s.items.map(i => [+i.x.toFixed(2), +i.y.toFixed(2), i.rot ? 1 : 0]) })) } : null
+  };
+  const text = "NESTING-SETUP " + JSON.stringify(info);
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {}
+  if (ok) { toast("Setup copied. Paste it into the chat."); return; }
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;inset:10% 15%;z-index:30;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.4)";
+  box.innerHTML = `<b>Copy this text and paste it into the chat</b><textarea readonly style="flex:1;font:12px monospace;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px"></textarea><button class="btn" style="align-self:flex-end">Close</button>`;
+  box.querySelector("textarea").value = text;
+  box.querySelector("button").onclick = () => box.remove();
+  document.body.appendChild(box);
+  box.querySelector("textarea").select();
+};
+($("#btnRefresh") || {}).onclick = () => {
+  if (!jobs.length) { toast("Add jobs first."); return; }
+  selMark = null; update();
+  toast(`Layout refreshed (v${APP_VERSION}).`);
+};
+
+let dragDepth = 0;
+window.addEventListener("dragenter", e => { if ([...(e.dataTransfer?.types || [])].includes("Files")) { dragDepth++; $("#mat").classList.add("drag"); } });
+window.addEventListener("dragleave", () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $("#mat").classList.remove("drag"); });
+window.addEventListener("dragover", e => e.preventDefault());
+window.addEventListener("drop", e => { e.preventDefault(); dragDepth = 0; $("#mat").classList.remove("drag"); if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files); });
+let rT; window.addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(renderLayout, 120); });
+
+syncSettingsUI();
+renderJobs();
+update();
+</script>
+</body>
+</html>
